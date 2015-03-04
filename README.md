@@ -10,7 +10,7 @@ meteor add tunguska:gauge
 
 # Demo
 
-tbd
+http://tunguska-gauge-demo.meteor.com
 
 # Basic Usage
 
@@ -150,12 +150,69 @@ pointer: {                            // Start of pointer definition
 someGauge.set(newValue);
 ```
 
-You can also read a gauge to get its current value:
+Where newValue is a simple pointer value, or an array of pointer values. You can also read a gauge to get its current value:
 
 ```
 var myValue = someGauge.get();
 ```
 
-# Examples
+Where myValue will be set to a simple value or an array of values.
+
+### Easing
+
+The easing data is in TunguskaGauge.easing
+
+It is an object of named cubic Bezier control arrays, each being an array of four waypoints (t,v):
+[[t0,v0],[t1,v1],[t2,v2],[t3,v3]] which form the control points of a cubic Beziér Curve.
+Under normal circumstances, the first point will be [0,0] and the fourth will be [1,1].
+
+```JavaScript
+TunguskaGauge.easing = {
+  linear: [
+    [0, 0],
+    [0.33, 0.33],
+    [0.67, 0.67],
+    [1, 1]
+  ],
+  bounce: [
+    [0, 0],
+    [0.73, 1],
+    [1, 1.3],
+    [1, 1]
+  ],
+  instant: [
+    [0, 1],
+    [0, 1],
+    [0, 1],
+    [1, 1]
+  ],
+  easeIn: [
+    [0, 0],
+    [0.42, 0],
+    [1, 1],
+    [1, 1]
+  ],
+  easeOut: [
+    [0, 0],
+    [0, 0],
+    [0.58, 1],
+    [1, 1]
+  ],
+  easeInOut: [
+    [0, 0],
+    [0.42, 0],
+    [0.58, 1],
+    [1, 1]
+  ]
+};
+```
+
+## Themes
+
+Themes are in TunguskaGauge.themes
+
+## Examples
+
+## Todo
 
 

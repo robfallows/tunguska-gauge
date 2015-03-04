@@ -12,101 +12,102 @@ TunguskaGauge = function(options) {
   return this.__init(options);
 };
 
-// TunguskaGauge Config contains some defaults and a basic theme
+// TunguskaGauge.config contains some defaults
 TunguskaGauge.config = {
-  lastValue: null,
-  theme: 'basic',
-  themes: {
-    basic: {
-      radius: 85,
-      range: {
-        min: 0,
-        max: 100,
-        startAngle: -135,
-        sweep: 225,
-        colorBand: [{
-          startAt: 0.95,
-          endAt: 0.99,
-          from: 0,
-          to: 75,
-          color: '#090'
-        }, {
-          startAt: 0.90,
-          endAt: 0.99,
-          from: 75,
-          to: 90,
-          color: '#e80'
-        }, {
-          startAt: 0.85,
-          endAt: 0.99,
-          from: 90,
-          to: 100,
-          color: '#d00'
-        }]
-      },
-      outer: {
-        lineWidth: 1,
-        color: "black",
-        alpha: 0.5,
-        radius: 1
-      },
-      pointer: {
-        points: [
-          [-0.1, -0.05],
-          [0.95, 0],
-          [-0.1, 0.05]
-        ],
-        lineWidth: 1,
-        color: "black",
-        alpha: 1,
-        fillColor: "red",
-        shadowX: 2,
-        shadowY: 2,
-        shadowBlur: 5,
-        shadowColor: "#000",
-        dynamics: {
-          duration: 150,
-          easing: 'easeIn'
-        }
-      },
-      tick: {
-        minor: {
-          lineWidth: 1,
-          startAt: 0.90,
-          endAt: 0.96,
-          interval: 2,
-          color: "black",
-          alpha: 1,
-          first: 0,
-          last: 100
-        },
-        major: {
-          lineWidth: 2,
-          startAt: 0.86,
-          endAt: 0.96,
-          interval: 10,
-          color: "black",
-          legend: {
-            color: "#669",
-            font: '12px sans-serif',
-            radius: 0.72
-          },
-          alpha: 1,
-          first: 0,
-          last: 100
-        }
-      },
-      digital: {
-        top: 40,
-        left: 0,
-        font: '20px monospace',
-        color: "#66a"
+  theme: 'basic'
+};
+
+// TunguskaGauge.themes contains a basic theme
+TunguskaGauge.themes = {
+  basic: {
+    radius: 0.85,
+    range: {
+      min: 0,
+      max: 100,
+      startAngle: -135,
+      sweep: 225,
+      colorBand: [{
+        startAt: 0.95,
+        endAt: 0.99,
+        from: 0,
+        to: 75,
+        color: '#090'
+      }, {
+        startAt: 0.90,
+        endAt: 0.99,
+        from: 75,
+        to: 90,
+        color: '#e80'
+      }, {
+        startAt: 0.85,
+        endAt: 0.99,
+        from: 90,
+        to: 100,
+        color: '#d00'
+      }]
+    },
+    outer: {
+      lineWidth: 1,
+      color: 'black',
+      alpha: 0.5,
+      radius: 1
+    },
+    pointer: {
+      points: [
+        [-0.1, -0.05],
+        [0.95, 0],
+        [-0.1, 0.05]
+      ],
+      lineWidth: 1,
+      color: 'black',
+      alpha: 1,
+      fillColor: 'red',
+      shadowX: 2,
+      shadowY: 2,
+      shadowBlur: 5,
+      shadowColor: '#000',
+      dynamics: {
+        duration: 150,
+        easing: 'easeIn'
       }
+    },
+    tick: {
+      minor: {
+        lineWidth: 1,
+        startAt: 0.90,
+        endAt: 0.96,
+        interval: 2,
+        color: 'black',
+        alpha: 1,
+        first: 0,
+        last: 100
+      },
+      major: {
+        lineWidth: 2,
+        startAt: 0.86,
+        endAt: 0.96,
+        interval: 10,
+        color: 'black',
+        legend: {
+          color: '#669',
+          font: '12px sans-serif',
+          radius: 0.72
+        },
+        alpha: 1,
+        first: 0,
+        last: 100
+      }
+    },
+    digital: {
+      top: 40,
+      left: 0,
+      font: '20px monospace',
+      color: '#66a'
     }
   }
-}
+};
 
-// TunguskaGauge Easing contains some defaults
+// TunguskaGauge.easing contains some defaults
 TunguskaGauge.easing = {
   linear: [
     [0, 0],
@@ -116,20 +117,32 @@ TunguskaGauge.easing = {
   ],
   bounce: [
     [0, 0],
-    [0.95, 1.2],
-    [0.98, 0.9],
+    [0.73, 1],
+    [1, 1.3],
     [1, 1]
   ],
   instant: [
     [0, 1],
     [0, 1],
     [0, 1],
-    [0, 1]
+    [1, 1]
   ],
   easeIn: [
     [0, 0],
-    [0.8, 0.8],
-    [0.9, 0.95],
+    [0.42, 0],
+    [1, 1],
+    [1, 1]
+  ],
+  easeOut: [
+    [0, 0],
+    [0, 0],
+    [0.58, 1],
+    [1, 1]
+  ],
+  easeInOut: [
+    [0, 0],
+    [0.42, 0],
+    [0.58, 1],
     [1, 1]
   ]
 };
@@ -174,7 +187,6 @@ TunguskaGauge.prototype = {
   __init: function(options) {
     'use strict';
     var canvas,
-      dh,
       DOMid,
       h,
       i,
@@ -193,110 +205,42 @@ TunguskaGauge.prototype = {
       z;
 
     theme = options.theme || TunguskaGauge.config.theme;
-    theme = TunguskaGauge.config.themes[theme];
+    theme = TunguskaGauge.themes[theme];
     if (!theme) {
-      theme = TunguskaGauge.config.themes[TunguskaGauge.config.theme];
+      theme = TunguskaGauge.themes[TunguskaGauge.config.theme];
     }
     this.theme = this.__clone(theme);
 
     for (i in options) {
       that = options[i];
       switch (i) {
-        case 'center':
-          {
-            if (!this.theme.center) {
-              this.theme.center = {};
-            }
-            for (j in that) {
-              this.theme.center[j] = this.__clone(that[j]);
-            }
-            break;
-          }
+
+        case 'id':
+        case 'theme':
+        case 'radius':
+          break;
+
         case 'range':
-          {
-            if (!this.theme.range) {
-              this.theme.range = {};
-            }
-            for (j in that) {
-              this.theme.range[j] = this.__clone(that[j]);
-            }
-            break;
-          }
         case 'background':
-          {
-            if (!this.theme.background) {
-              this.theme.background = {};
-            }
-            for (j in that) {
-              this.theme.background[j] = this.__clone(that[j]);
-            }
-            break;
-          }
         case 'foreground':
-          {
-            if (!this.theme.foreground) {
-              this.theme.foreground = {};
-            }
-            for (j in that) {
-              this.theme.foreground[j] = this.__clone(that[j]);
-            }
-            break;
-          }
-        case 'aperture':
-          {
-            if (!this.theme.aperture) {
-              this.theme.aperture = {};
-            }
-            for (j in that) {
-              this.theme.aperture[j] = this.__clone(that[j]);
-            }
-            break;
-          }
-        case 'tick':
-          {
-            this.theme.tick = this.__clone(that);
-            break;
-          }
         case 'digital':
-          {
-            if (!this.theme.digital) {
-              this.theme.digital = {};
-            }
-            for (j in that) {
-              this.theme.digital[j] = this.__clone(that[j]);
-            }
-            break;
-          }
-        case 'pointer':
-          {
-            if (!this.theme.pointer) {
-              this.theme.pointer = {};
-            }
-            for (j in that) {
-              this.theme.pointer[j] = this.__clone(that[j]);
-            }
-            break;
-          }
         case 'outer':
-          {
-            if (!this.theme.outer) {
-              this.theme.outer = {};
-            }
-            for (j in that) {
-              this.theme.outer[j] = this.__clone(that[j]);
-            }
-            break;
-          }
         case 'callback':
-          {
-            if (!this.theme.callback) {
-              this.theme.callback = {};
-            }
-            for (j in that) {
-              this.theme.callback[j] = this.__clone(that[j]);
-            }
-            break;
+          if (!this.theme[i]) {
+            this.theme[i] = {};
           }
+          for (j in that) {
+            this.theme[i][j] = this.__clone(that[j]);
+          }
+          break;
+
+        case 'tick':
+        case 'pointer':
+          this.theme[i] = this.__clone(that);
+          break;
+
+        default:
+          throw new Error('Unknown option: ' + i);
       }
     }
 
@@ -309,7 +253,12 @@ TunguskaGauge.prototype = {
     DOMid = document.getElementById(lock.id);
     DOMid.setAttribute('style', 'position:relative;top:0;left:0');
 
-    //Create canvas elements 0: background, 1: scale, 2: digital, 3: pointers, 4: foreground
+    //                                                      Create canvas elements
+    //                                                       0: background,
+    //                                                       1: scale,
+    //                                                       2: digital,
+    //                                                       3: pointers,
+    //                                                       4: foreground
     this.canvasId = [];
     for (i = 0; i <= 4; i++) {
       canvas = document.createElement('canvas');
@@ -317,43 +266,33 @@ TunguskaGauge.prototype = {
       DOMid.appendChild(canvas);
       this.canvasId[i] = canvas.id;
     }
-    this.gaugeRadius = options.radius || this.theme.radius;
+
+    h = w = Math.min(DOMid.clientHeight, DOMid.clientWidth); // Get smallest square container size
+    this.gaugeRadius = options.radius || this.theme.radius || 0.95;
+    this.gaugeRadius = this.gaugeRadius * w / 2; //         Set px radius based off dimension
     this.showDigits = typeof options.showDigits === 'boolean' ? options.showDigits : false;
 
-    //define context elements
-    this.context = [];
-    // Get the canvas elements
-    this.canvas = [];
-
-    w = this.gaugeRadius * 2;
-    h = this.gaugeRadius * 2;
-    dh = 0;
-    if (this.theme.aperture) {
-      w = this.theme.aperture.width || w;
-      w -= (this.theme.aperture.left) ? this.theme.aperture.left : 0;
-      dh = (this.theme.aperture.height) ? h - this.theme.aperture.height : 0;
-      h = this.theme.aperture.height || h;
-      h -= (this.theme.aperture.top) ? this.theme.aperture.top : 0;
-    }
     this.width = w;
     this.height = h;
-    this.dh = dh / 2;
-    myZ = z;
-    for (i = 0; i < this.canvasId.length; i++) {
+
+    this.context = []; //                                   Define context elements
+    this.canvas = []; //                                    Get the canvas elements
+    this.cachedCanvas = []; //                              For image pointers
+    myZ = z; //                                             Get deepest z-index (we need to stack the canvases)
+
+    for (i = 0; i < this.canvasId.length; i++) { //         Iterate over canvas DOM ids
       this.canvas[i] = document.getElementById(this.canvasId[i]);
-      // Make each canvas the same requested size.
-      this.canvas[i].setAttribute('width', w);
+
+      this.canvas[i].setAttribute('width', w); //           Make each canvas the same requested size.
       this.canvas[i].setAttribute('height', h);
-      myZ += 1;
+      myZ += 1; //                                          Increment z-index and set canvas layer's style
       style = 'position:absolute;top:0;left:0;z-index:' + myZ + ';width:' + w + 'px;height:' + h + 'px;';
       this.canvas[i].setAttribute('style', style);
-      // Initialise each canvas context
-      this.context[i] = this.canvas[i].getContext('2d');
-      this.context[i].translate(w / 2, h / 2);
-      if (this.theme.aperture) {
-        this.context[i].translate(this.theme.aperture.left, this.theme.aperture.top);
-      }
+
+      this.context[i] = this.canvas[i].getContext('2d'); // Initialise each canvas context
+      this.context[i].translate(w / 2, h / 2); //           Move origin to canvas centre
     }
+
     if (('background' in this.theme) && ('image' in this.theme.background)) {
       thbgimg = new Image();
       self = this;
@@ -374,21 +313,29 @@ TunguskaGauge.prototype = {
       };
       thfgimg.src = this.theme.foreground.image;
     }
-    this.lastValue = TunguskaGauge.config.lastValue;
+    //                                                      If there are any image pointers or shadows, cache them.
+    if (this.theme.pointer instanceof Array) {
+      for (i = 0; i < this.theme.pointer.length; i++) {
+        this.__registerImages(i);
+      }
+    } else {
+      this.__registerImages(0);
+    }
+    this.lastValue = null;
     this.initialised = false;
     return this;
   },
 
   /** easing is an array of four waypoints (t,v): [[t0,v0],[t1,v1],[t2,v2],[t3,v3]]
    *  which form the control points of a cubic Beziér Curve.
-   *  under normal circumstances, the first point will be [0,0] and the fourth will be [1,1]
-   * t and v are each in the range 0..1
+   *  under normal circumstances, the first point will be [0,0] and the fourth will be [1,1]:
+   *  you may use http://matthewlein.com/ceaser/ to generate the remaining four points t1, v1, t2, v2.
    * t is a time marker (0=start, 1=end)
    * v is the relative value at that time
    * tWay is in the range 0..1 and is the time waypoint for which a relative value is to be computed.
-   * It corresponds to a proportion of distance along the Bezier curve.
+   * It corresponds to a proportion of distance along the Beziér curve.
    * ==================================================
-   * Based off:
+   * Based off (his parameters were the wrong way round):
    * 13thParallel.org Beziér Curve Code
    * by Dan Pupius (www.pupius.net)
    * http://www.13thparallel.org/archive/bezier-curves/
@@ -431,46 +378,37 @@ TunguskaGauge.prototype = {
     return getBezier(tWay, TunguskaGauge.easing[easing]);
   },
 
-  __offset: function(obj) {
-    'use strict';
-    var curleft = 0;
-    var curtop = 0;
-    if (obj.offsetParent) {
-      do {
-        curleft += obj.offsetLeft;
-        curtop += obj.offsetTop;
-      } while (!!(obj = obj.offsetParent)); //    Assign obj and force boolean test result
-    }
-    return [curleft, curtop];
-  },
-
-  __outerArc: function() {
+  __outerArc: function() { //                               Draws the outer bound of the scale
     'use strict';
     var angle0,
       angle1,
       ctx,
       radius,
       radScale;
-    ctx = this.context[1];
-    ctx.save();
-    ctx.globalAlpha = (this.theme.outer && this.theme.outer.alpha) ? this.theme.outer.alpha : 0;
-    ctx.lineWidth = (this.theme.outer && this.theme.outer.lineWidth) ? this.theme.outer.lineWidth : 1;
-    ctx.beginPath();
+    if (('outer' in this.theme) && ('range' in this.theme)) {
+      ctx = this.context[1];
+      ctx.save();
+      ctx.globalAlpha = ('alpha' in this.theme.outer) ? this.theme.outer.alpha : 0;
+      ctx.lineWidth = ('lineWidth' in this.theme.outer) ? this.theme.outer.lineWidth : 1;
+      ctx.beginPath();
 
-    radScale = (this.theme.outer && this.theme.outer.radius) ? this.theme.outer.radius : 0;
-    radius = this.gaugeRadius * radScale - ctx.lineWidth / 2;
-    ctx.strokeStyle = this.theme.outer.color;
+      radScale = ('radius' in this.theme.outer) ? this.theme.outer.radius : 0;
+      radius = this.gaugeRadius * radScale - ctx.lineWidth / 2;
+      ctx.strokeStyle = this.theme.outer.color;
 
-    angle0 = this.theme.range.startAngle * Math.PI / 180.0 - Math.PI / 2;
-    angle1 = angle0 + Math.abs(this.theme.range.sweep) * Math.PI / 180.0;
-    if (radius > 0) {
-      ctx.arc(0, 0, radius, angle0, angle1, false);
+      if (('startAngle' in this.theme.range) && ('sweep' in this.theme.range)) {
+        angle0 = this.theme.range.startAngle * Math.PI / 180.0 - Math.PI / 2;
+        angle1 = angle0 + Math.abs(this.theme.range.sweep) * Math.PI / 180.0;
+        if (radius > 0) {
+          ctx.arc(0, 0, radius, angle0, angle1, false);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
     }
-    ctx.stroke();
-    ctx.restore();
   },
 
-  __colorBand: function() {
+  __colorBand: function() { //                              Draws a colour band on the scale
     'use strict';
     var angle0,
       angle1,
@@ -478,35 +416,36 @@ TunguskaGauge.prototype = {
       i,
       radius,
       thisBand;
-    ctx = this.context[1];
-    ctx.save();
-    for (i in this.theme.range.colorBand) {
-      thisBand = this.theme.range.colorBand[i];
-      ctx.lineWidth = this.gaugeRadius * Math.abs((thisBand.endAt - thisBand.startAt));
-      radius = this.gaugeRadius * Math.abs((thisBand.endAt + thisBand.startAt)) / 2;
-      ctx.strokeStyle = thisBand.color;
-      angle0 = Math.PI * (this.__scaleValue(thisBand.from) - 90) / 180.0;
-      angle1 = Math.PI * (this.__scaleValue(thisBand.to) - 90) / 180.0;
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, angle0, angle1, false);
-      ctx.stroke();
+    if (('range' in this.theme) && ('colorBand' in this.theme.range)) {
+      ctx = this.context[1];
+      ctx.save();
+      for (i in this.theme.range.colorBand) {
+        thisBand = this.theme.range.colorBand[i];
+        ctx.lineWidth = this.gaugeRadius * Math.abs((thisBand.endAt - thisBand.startAt));
+        radius = this.gaugeRadius * Math.abs((thisBand.endAt + thisBand.startAt)) / 2;
+        ctx.strokeStyle = thisBand.color;
+        angle0 = this.__scaleValue(thisBand.from) - Math.PI / 2.0;
+        angle1 = this.__scaleValue(thisBand.to) - Math.PI / 2.0;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, angle0, angle1, false);
+        ctx.stroke();
+      }
+      ctx.restore();
     }
-    ctx.restore();
   },
 
-  // Draw some text centered vertically and horizontally
-  __text: function(ctx, theText, x, y) {
+  __text: function(ctx, theText, x, y) { //                 Draw some text centered vertically and horizontally
     'use strict';
     var tArray = ('' + theText).split('\n');
     var myY = y;
     for (var t in tArray) {
       var tSize = this.context[ctx].measureText(tArray[t]);
       this.context[ctx].fillText(tArray[t], x - tSize.width / 2, myY);
-      myY += 12;
+      myY += 12; //                                         Should use line height here
     }
   },
 
-  __scaleValue: function(plotValue) {
+  __scaleValue: function(plotValue) { //                    Get the angle in radians from a (pointer) value
     'use strict';
     var min = 0;
     var max = 359;
@@ -534,17 +473,17 @@ TunguskaGauge.prototype = {
         startAngle = this.theme.range.startAngle;
       }
     }
-    return startAngle + ((plotValue - min) * Math.abs(sweep) / parseFloat(range));
+    return Math.PI * (startAngle + ((plotValue - min) * Math.abs(sweep) / parseFloat(range))) / 180.0;
   },
 
-  // the full range of the gauge is 0-100. We work out the angle accordingly
-  __drawTick: function(tickValue, tick) {
+  __drawTick: function(tickValue, tick) { //                Draw a scale tick mark
     'use strict';
     var angle,
       ctx,
       radius,
       sweep,
       t,
+      tl,
       x0,
       x1,
       xDirection,
@@ -556,9 +495,9 @@ TunguskaGauge.prototype = {
     ctx.strokeStyle = tick.color;
     ctx.lineWidth = tick.lineWidth;
 
-    angle = Math.PI * this.__scaleValue(tickValue) / 180.0;
+    angle = this.__scaleValue(tickValue);
     sweep = 360;
-    if (this.theme.range && this.theme.range.sweep) {
+    if (('range' in this.theme) && ('sweep' in this.theme.range)) {
       sweep = this.theme.range.sweep;
     }
     xDirection = (sweep < 0) ? -1 : 1;
@@ -576,33 +515,95 @@ TunguskaGauge.prototype = {
     }
 
     if (tick.legend) {
-      radius = this.gaugeRadius * tick.startAt;
-      x0 = xDirection * Math.sin(angle) * this.gaugeRadius * this.theme.tick.major.legend.radius;
-      y0 = -Math.cos(angle) * this.gaugeRadius * this.theme.tick.major.legend.radius;
-      ctx.save();
-      ctx.fillStyle = this.theme.tick.major.legend.color;
-      ctx.font = this.theme.tick.major.legend.font;
-      if (this.theme.tick.major.legend.callback) {
-        t = this.theme.tick.major.legend.callback(tickValue);
-      } else {
-        t = tickValue;
+      if (('tick' in this.theme) && ('major' in this.theme.tick) && ('legend' in this.theme.tick.major)) {
+        tl = this.theme.tick.major.legend;
+        radius = this.gaugeRadius * tick.startAt;
+        x0 = xDirection * Math.sin(angle) * this.gaugeRadius * tl.radius;
+        y0 = -Math.cos(angle) * this.gaugeRadius * tl.radius;
+        ctx.save();
+        ctx.fillStyle = tl.color;
+        ctx.font = tl.font;
+        if (tl.callback) {
+          t = tl.callback(tickValue);
+        } else {
+          t = tickValue;
+        }
+        this.__text(1, t, x0, y0 + 5);
+        ctx.restore();
       }
-      this.__text(1, t, x0, y0 + 5);
-      ctx.restore();
     }
     ctx.restore();
   },
 
-  __drawPointer: function(p, pointerValue) {
+  __registerImages: function(p) {
+    'use strict';
+    var bgimg,
+      fgimg,
+      context,
+      pp,
+      self = this,
+      sweep,
+      themePointer = this.theme.pointer,
+      xDirection;
+
+    self.cachedCanvas[p] = {
+      image: document.createElement('canvas'),
+      imageContext: null,
+      shadow: document.createElement('canvas'),
+      shadowContext: null
+    }
+    pp = self.cachedCanvas[p];
+    pp.image.setAttribute('height', self.height);
+    pp.image.setAttribute('width', self.width);
+    pp.imageContext = self.cachedCanvas[p].image.getContext('2d');
+    pp.shadow.setAttribute('height', self.height);
+    pp.shadow.setAttribute('width', self.width);
+    pp.shadowContext = self.cachedCanvas[p].shadow.getContext('2d');
+    if (('shadow' in themePointer) && ('name' in themePointer.shadow)) {
+      sweep = 360;
+      if (('range' in self.theme) && ('sweep' in self.theme.range)) {
+        sweep = self.theme.range.sweep;
+      }
+      xDirection = (sweep < 0) ? -1 : 1;
+      bgimg = new Image();
+      bgimg.src = themePointer.shadow.name;
+      bgimg.onload = function() {
+        pp.shadowContext.drawImage(bgimg, 0, 0);
+        context = self.context[3]; //                       We need to draw an initial position, so that
+        //                                                  there is something to see prior to first update
+        context.save();
+        context.translate(themePointer.shadowX, themePointer.shadowY);
+        context.rotate((xDirection * self.__scaleValue(self.theme.range.min)) - Math.PI / 2);
+        context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
+        context.drawImage(bgimg, 0, 0);
+        context.restore();
+      }
+    }
+    if (('image' in themePointer) && ('name' in themePointer.image)) {
+      fgimg = new Image();
+      fgimg.src = themePointer.image.name;
+      fgimg.onload = function() {
+        pp.imageContext.drawImage(fgimg, 0, 0);
+        context = self.context[3]; //                       We need to draw an initial position, so that
+        //                                                  there is something to see prior to first update
+        context.save();
+        context.rotate((xDirection * self.__scaleValue(self.theme.range.min)) - Math.PI / 2);
+        context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
+        context.drawImage(fgimg, 0, 0);
+        context.restore();
+      }
+    }
+  },
+
+  __drawPointer: function(p, pointerValue) { //             Draws a pointer
     'use strict';
     var angle,
-      bgimg,
       context,
       deltaR,
-      fgimg,
       i,
+      pp,
       Radius,
-      self,
+      self = this,
       sweep,
       theta,
       themePointer,
@@ -610,105 +611,90 @@ TunguskaGauge.prototype = {
       xy,
       xDirection,
       y;
-    angle = Math.PI * this.__scaleValue(pointerValue) / 180.0;
-    Radius = this.gaugeRadius;
+    angle = self.__scaleValue(pointerValue);
+    Radius = self.gaugeRadius;
 
-    if (!('pointer' in this.theme)) return;
-    themePointer = this.theme.pointer;
-    if (this.theme.pointer instanceof Array) {
-      themePointer = this.theme.pointer[p];
+    if (!('pointer' in self.theme)) return;
+    themePointer = self.theme.pointer;
+    if (themePointer instanceof Array) {
+      themePointer = self.theme.pointer[p];
     }
 
     sweep = 360;
-    if (('range' in this.theme) && ('sweep' in this.theme.range)) {
-      sweep = this.theme.range.sweep;
+    if (('range' in self.theme) && ('sweep' in self.theme.range)) {
+      sweep = self.theme.range.sweep;
     }
     xDirection = (sweep < 0) ? -1 : 1;
 
     if (('shadow' in themePointer) || ('image' in themePointer)) {
-      if ('shadow' in themePointer) {
-        self = this;
-        context = this.context[3];
-        if ('name' in themePointer.shadow) {
-          bgimg = new Image();
-          bgimg.onload = function() {
-            context.save();
-            context.translate(0, self.dh);
-            context.translate(themePointer.shadowX, themePointer.shadowY);
-            context.rotate((xDirection * angle) - Math.PI / 2);
-            context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
-            context.drawImage(bgimg, 0, 0);
-            context.restore();
-          };
-          bgimg.src = themePointer.shadow.name;
-        }
+      pp = self.cachedCanvas[p];
+      if (('shadow' in themePointer) && ('name' in themePointer.shadow)) {
+        context = self.context[3];
+        context.save();
+        context.translate(themePointer.shadowX, themePointer.shadowY);
+        context.rotate((xDirection * angle) - Math.PI / 2);
+        context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
+        context.drawImage(pp.shadow, 0, 0); //            Image comes from canvas cache
+        context.restore();
       }
-      if ('image' in themePointer) {
-        self = this;
-        context = this.context[3];
-        if ('name' in themePointer.image) {
-          fgimg = new Image();
-          fgimg.onload = function() {
-            context.save();
-            context.translate(0, self.dh);
-            context.rotate((xDirection * angle) - Math.PI / 2);
-            context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
-            context.drawImage(fgimg, 0, 0);
-            context.restore();
-          };
-          fgimg.src = themePointer.image.name;
-        }
+      if (('image' in themePointer) && ('name' in themePointer.image)) {
+        context = self.context[3];
+        context.save();
+        context.rotate((xDirection * angle) - Math.PI / 2);
+        context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
+        context.drawImage(pp.image, 0, 0); //            Image comes from canvas cache
+        context.restore();
       }
     } else {
-      this.context[3].save();
+      self.context[3].save();
       if ('alpha' in themePointer) {
-        this.context[3].globalAlpha = themePointer.alpha;
+        self.context[3].globalAlpha = themePointer.alpha;
       }
       if ('color' in themePointer) {
-        this.context[3].strokeStyle = themePointer.color;
+        self.context[3].strokeStyle = themePointer.color;
       }
       if ('lineWidth' in themePointer) {
-        this.context[3].lineWidth = themePointer.lineWidth;
+        self.context[3].lineWidth = themePointer.lineWidth;
       }
       if ('fillColor' in themePointer) {
-        this.context[3].fillStyle = themePointer.fillColor;
+        self.context[3].fillStyle = themePointer.fillColor;
       }
       if ('shadowX' in themePointer) {
-        this.context[3].shadowOffsetX = themePointer.shadowX;
+        self.context[3].shadowOffsetX = themePointer.shadowX;
       }
       if ('shadowY' in themePointer) {
-        this.context[3].shadowOffsetY = themePointer.shadowY;
+        self.context[3].shadowOffsetY = themePointer.shadowY;
       }
       if ('shadowBlur' in themePointer) {
-        this.context[3].shadowBlur = themePointer.shadowBlur;
+        self.context[3].shadowBlur = themePointer.shadowBlur;
       }
       if ('shadowColor' in themePointer) {
-        this.context[3].shadowColor = themePointer.shadowColor;
+        self.context[3].shadowColor = themePointer.shadowColor;
       }
 
-      this.context[3].beginPath();
+      self.context[3].beginPath();
       for (i in themePointer.points) {
         xy = themePointer.points[i];
-        x = xy[0] * this.gaugeRadius;
-        y = xy[1] * this.gaugeRadius;
+        x = xy[0] * self.gaugeRadius;
+        y = xy[1] * self.gaugeRadius;
         deltaR = Math.sqrt(x * x + y * y);
         theta = Math.atan2(y, x);
         x = xDirection * Math.sin(angle + theta) * deltaR;
         y = -Math.cos(angle + theta) * deltaR;
         if (+i === 0) {
-          this.context[3].moveTo(x, y);
+          self.context[3].moveTo(x, y);
         } else {
-          this.context[3].lineTo(x, y);
+          self.context[3].lineTo(x, y);
         }
       }
-      this.context[3].closePath();
+      self.context[3].closePath();
       if (themePointer.lineWidth) {
-        this.context[3].stroke();
+        self.context[3].stroke();
       }
       if (themePointer.fillColor) {
-        this.context[3].fill();
+        self.context[3].fill();
       }
-      this.context[3].restore();
+      self.context[3].restore();
     }
   },
 
@@ -939,7 +925,7 @@ TunguskaGauge.prototype = {
     this.__update(pValue);
   },
 
-  setValue: function(value) {
+  set: function(value) {
     'use strict';
     var i,
       match,
@@ -982,9 +968,8 @@ TunguskaGauge.prototype = {
     }
   },
 
-  getValue: function() {
+  get: function() {
     'use strict';
     return this.lastValue;
   }
-};
-
+}
