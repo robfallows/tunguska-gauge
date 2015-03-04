@@ -10,7 +10,7 @@ meteor add tunguska:gauge
 
 # Demo
 
-http://tunguska-gauge-demo.meteor.com
+tbd
 
 # Basic Usage
 
