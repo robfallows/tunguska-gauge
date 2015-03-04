@@ -2,6 +2,8 @@
 
 Embed dynamic gauges into your Meteor app.
 
+Uses canvas, so if you're on IE8 or below, you're out of luck.
+
 # Install
 
 ```JavaScript
@@ -211,7 +213,7 @@ TunguskaGauge.easing = {
 
 Themes are in TunguskaGauge.themes
 
-A basic theme is built in:
+A theme provides a names base set of options for a new TunguskaGauge instance. A basic theme is built in (called "basic"), which can be overwritten if you have another theme package:
 
 ```JavaScript
 TunguskaGauge.themes = {
@@ -308,4 +310,5 @@ TunguskaGauge.themes = {
 
 ## Todo
 
-
+- Improve Annotation.
+- Maybe I should be using requestAnimationFrame.
