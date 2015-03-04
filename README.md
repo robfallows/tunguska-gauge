@@ -162,7 +162,7 @@ Where myValue will be set to a simple value or an array of values.
 
 ### Easing
 
-The easing data is in TunguskaGauge.easing
+The easing data is in `TunguskaGauge.easing`
 
 It is an object of named cubic Bezier control arrays, each being an array of four waypoints (t,v):
 [[t0,v0],[t1,v1],[t2,v2],[t3,v3]] which form the control points of a cubic Beziér Curve.
@@ -211,9 +211,9 @@ TunguskaGauge.easing = {
 
 ## Themes
 
-Themes are in TunguskaGauge.themes
+Themes are in `TunguskaGauge.themes`
 
-A theme provides a names base set of options for a new TunguskaGauge instance. A basic theme is built in (called "basic"), which can be overwritten if you have another theme package:
+A theme provides a named initial set of options for a new TunguskaGauge instance. A basic theme is built in (called "basic"), which can be overwritten if you have another theme package.
 
 ```JavaScript
 TunguskaGauge.themes = {
@@ -306,9 +306,26 @@ TunguskaGauge.themes = {
 };
 ```
 
+Normally, you would specify a theme early on in the options object passed to the `new TunguskaGauge` command. For example:
+
+```JavaScript
+var anotherGauge = new TunguskaGauge({
+  id: 'gauge-id',
+  theme: 'steampunk',                             // Use steampunk theme
+  background: {                                   // Then override its background image
+    image: '/public/images/steampunk99.png'
+  }
+});
+```
+
+
+
 ## Examples
+
+tbd
 
 ## Todo
 
 - Improve Annotation.
 - Maybe I should be using requestAnimationFrame.
+- Better handling of options overrides.
