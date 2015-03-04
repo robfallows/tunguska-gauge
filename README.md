@@ -10,7 +10,7 @@ meteor add tunguska:gauge
 
 # Demo
 
-http://tunguska-gauge-demo.meteor.com
+tbd
 
 # Basic Usage
 
@@ -210,6 +210,99 @@ TunguskaGauge.easing = {
 ## Themes
 
 Themes are in TunguskaGauge.themes
+
+A basic theme is built in:
+
+```JavaScript
+TunguskaGauge.themes = {
+  basic: {
+    radius: 0.85,
+    range: {
+      min: 0,
+      max: 100,
+      startAngle: -135,
+      sweep: 225,
+      colorBand: [{
+        startAt: 0.95,
+        endAt: 0.99,
+        from: 0,
+        to: 75,
+        color: '#090'
+      }, {
+        startAt: 0.90,
+        endAt: 0.99,
+        from: 75,
+        to: 90,
+        color: '#e80'
+      }, {
+        startAt: 0.85,
+        endAt: 0.99,
+        from: 90,
+        to: 100,
+        color: '#d00'
+      }]
+    },
+    outer: {
+      lineWidth: 1,
+      color: 'black',
+      alpha: 0.5,
+      radius: 1
+    },
+    pointer: {
+      points: [
+        [-0.1, -0.05],
+        [0.95, 0],
+        [-0.1, 0.05]
+      ],
+      lineWidth: 1,
+      color: 'black',
+      alpha: 1,
+      fillColor: 'red',
+      shadowX: 2,
+      shadowY: 2,
+      shadowBlur: 5,
+      shadowColor: '#000',
+      dynamics: {
+        duration: 150,
+        easing: 'easeIn'
+      }
+    },
+    tick: {
+      minor: {
+        lineWidth: 1,
+        startAt: 0.90,
+        endAt: 0.96,
+        interval: 2,
+        color: 'black',
+        alpha: 1,
+        first: 0,
+        last: 100
+      },
+      major: {
+        lineWidth: 2,
+        startAt: 0.86,
+        endAt: 0.96,
+        interval: 10,
+        color: 'black',
+        legend: {
+          color: '#669',
+          font: '12px sans-serif',
+          radius: 0.72
+        },
+        alpha: 1,
+        first: 0,
+        last: 100
+      }
+    },
+    digital: {
+      top: 40,
+      left: 0,
+      font: '20px monospace',
+      color: '#66a'
+    }
+  }
+};
+```
 
 ## Examples
 
