@@ -231,7 +231,32 @@ TunguskaGauge.themes = {
       min: 0,
       max: 100,
       startAngle: -135,
-      sweep: 225
+      sweep: 225,
+      colorBand: [{
+        startAt: 0.95,
+        endAt: 0.99,
+        from: 0,
+        to: 75,
+        color: '#090'
+      }, {
+        startAt: 0.90,
+        endAt: 0.99,
+        from: 75,
+        to: 90,
+        color: '#e80'
+      }, {
+        startAt: 0.85,
+        endAt: 0.99,
+        from: 90,
+        to: 100,
+        color: '#d00'
+      }]
+    },
+    outer: {
+      lineWidth: 1,
+      color: 'black',
+      alpha: 0.5,
+      radius: 1
     },
     pointer: {
       points: [
@@ -305,12 +330,18 @@ var anotherGauge = new TunguskaGauge({
 
 ## Examples
 
-tbd
+###Basic
+
+Simple gauge (random numbers served from meteor.com): http://tunguska-gauge-demo.meteor.com
+
+GIT repo: https://github.com/robfallows/tunguska-gauge-demo
 
 ## Todo
 
+- Themeroller.
 - Improve Annotation.
 - Include requestAnimationFrame polyfill.
 - Better handling of options overrides.
 - Better easing: bespoke functions, rather than cubic Bezier interpolation
+- More demo gauges.
 
