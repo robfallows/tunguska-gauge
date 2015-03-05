@@ -17,8 +17,9 @@ TunguskaGauge.config = {
   theme: 'basic'
 };
 
-// TunguskaGauge.themes contains a basic theme
+// TunguskaGauge.themes contains basic themes
 TunguskaGauge.themes = {
+  none:{},
   basic: {
     radius: 0.85,
     range: {
@@ -180,9 +181,10 @@ TunguskaGauge.prototype = {
       z;
 
     theme = options.theme || TunguskaGauge.config.theme;
-    theme = TunguskaGauge.themes[theme];
+    //                                                      Check for a theme pack. It will take precedence
+    theme = TunguskaGaugeThemePack[theme] || TunguskaGauge.themes[theme];
     if (!theme) {
-      theme = TunguskaGauge.themes[TunguskaGauge.config.theme];
+      theme = TunguskaGaugeThemePack[TunguskaGauge.config.theme] || TunguskaGauge.themes[TunguskaGauge.config.theme];
     }
     this.theme = this.__clone(theme);
 

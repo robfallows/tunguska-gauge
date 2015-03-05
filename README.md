@@ -24,7 +24,7 @@ var someGauge = new TunguskaGauge(options);
 
 ### Options
 
-The instantiation `options` allow you to define a gauge's style. In fact gauge theme packages can be used to provide 
+The instantiation `options` allow you to define a gauge's style. In fact gauge theme packages can be used to provide
 a variety of pre-built gauge designs. Gauges may be fully rendered, use images as pointers, or a combination.
 An individual gauge may have more than one pointer (e.g. a clock could have three: hours, minutes and seconds).
 
@@ -49,7 +49,27 @@ TunguskaGauge does not currently support non-circular gauges (e.g. ellipses).
     lowStop: -3,                      // Where to stop the pointer if a value smaller than range.min is supplied
     highStop: 153,                    // Where to stop the pointer if a value larger than range.max is supplied
     startAngle: -135,                 // Where the pointer starts in degrees (vertically up is 0)
-    sweep: 270                        // How many degrees to sweep for the full range (+ sweeps clockwise, - sweeps anticlockwise)
+    sweep: 270,                       // How many degrees to sweep for the full range (+ sweeps clockwise, - sweeps anticlockwise)
+    colorBand: [{                     // Start of colour bands
+      startAt: 0.95,                  // A narrow, green band from 0 to 75 range units
+      endAt: 0.99,
+      from: 0,
+      to: 75,
+      color: '#0d0'
+    },{
+      startAt: 0.90,                  // A wider, amber band from 75 to 90
+      endAt: 0.99,
+      from: 75,
+      to: 90,
+      color: '#ed0'
+    }, {                              //
+      startAt: 0.85,                  // An even wider, red band from 90 to 100
+      endAt: 0.99,
+      from: 90,
+      to: 100,
+      color: '#d00'
+    }]
+    },
   },
   background: {                       // Start of the background object
     image: 'image-file.png',          // Use an image for the background
@@ -73,13 +93,13 @@ TunguskaGauge does not currently support non-circular gauges (e.g. ellipses).
   outer: {                            // Start of outer object (draws a border round the gauge)
     lineWidth: 1,                     // Thickness of border line (px)
     color: 'white',                   // Colour of line
-    alpha: 0.5,                       // Opacity (0 - fully transparent .. 1 - fully opaque) 
+    alpha: 0.5,                       // Opacity (0 - fully transparent .. 1 - fully opaque)
     radius: 1                         // Radius value(0..1) proportional to the size of the container
   },
   callback: {                         // Define general pointer value conversion functionality
     pointer: function(pV) {           //   Callback to convert a pointer value (pV) to a usable range value
       code here;                      //   (e.g. convert a Date object to hours, minutes and seconds for a clock)
-    },                                // 
+    },                                //
     wrap: true                        // If the pointer should wrap around from max to min when max is exceeded
   },                                  //   (e.g. a clock hands shouldn't wind backwards at midday/midnight)
   tick: {                             // Start of tick definitions
@@ -104,7 +124,7 @@ TunguskaGauge does not currently support non-circular gauges (e.g. ellipses).
         font: '12px sans-serif',      // Legend font
         radius: 0.75,                 // Distance from centre (0..1)
         callback: function(n) {       // Callback if any special conversion needed: n is major tick value
-          code here;                  // 
+          code here;                  //
         }
       },
       alpha: 1,                       // Opacity (0..1) of major ticks
@@ -122,21 +142,21 @@ Use a simple object for a single pointer. Use an array of objects for multiple p
 
 The basic pointer object is as follows:
 
-```JavaScript// 
+```JavaScript//
 pointer: {                            // Start of pointer definition
   image: {                            // Pointer is an image. Note that image pointers trump rendered pointers
     name: 'pointer-image.png',        // The image pointer file name
     xOffset: 32,                      // Where the pointer centre is in the image
-    yOffset: 15                       // 
+    yOffset: 15                       //
   },
   shadow: {                           // Shadow is an image.
     name: 'shadow-image.png',         // The shadow pointer file name
     xOffset: 32,                      // Where the shadow centre is in the image
-    yOffset: 15                       // 
+    yOffset: 15                       //
   },
   points: [                           // Pointer is rendered
     [-0.1, -0.05],                    //   (x,y) Co-ordinates of pointer relative to centre (0,0)
-    [0.7, 0],                         // 
+    [0.7, 0],                         //
     [-0.1, 0.05]                      // Note that final point will close the shape
   ],
   lineWidth: 1,                       // Thickness of pointer outline (rendered only)
@@ -221,7 +241,7 @@ TunguskaGauge.easing = {
 
 Themes are in `TunguskaGauge.themes`
 
-A theme provides a named initial set of options for a new TunguskaGauge instance. A basic theme is built in (called "basic"), which can be overwritten if you have another theme package.
+A theme provides a named initial set of options for a new TunguskaGauge instance. A basic theme is built in (called "basic"), which can be superseded if you have another theme package.
 
 ```JavaScript
 TunguskaGauge.themes = {
@@ -326,7 +346,11 @@ var anotherGauge = new TunguskaGauge({
 });
 ```
 
+## ThemePacks
 
+TunguskaGauge tries to find a named theme in the global TunguskaGaugeThemePack object. If it cannot be found (e.g. a theme pack has
+not been installed, or the named theme is not in the theme pack) it will try the default themes. If all else fails it will try the
+overall default theme (currently "basic").
 
 ## Examples
 
