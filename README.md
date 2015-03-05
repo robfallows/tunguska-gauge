@@ -28,13 +28,21 @@ The instantiation `options` allow you to define a gauge's style. In fact gauge t
 a variety of pre-built gauge designs. Gauges may be fully rendered, use images as pointers, or a combination.
 An individual gauge may have more than one pointer (e.g. a clock could have three: hours, minutes and seconds).
 
-The full `options` object with sample values is as follows. Note that most options are, well, optional:
+The full `options` object with sample values is as follows. Note that most options are, well, optional. Note that the
+terms `range units` and `radius units` are used for certain values.
+
+A `range unit` is a number between `range.min` and `range.max` inclusive.
+
+A `radius unit` is a number between 0 and 1 which will internally be multiplied by the radius size of the containing div. The
+radius size is calculated as half of the smaller of the height and width. That is the radius of the largest circle which
+can be drawn within the container. For example, a div which is sized as 200 x 150 (px) has a radius size of 75px.
+TunguskaGauge does not currently support non-circular gauges (e.g. ellipses).
 
 ```JavaScript
 {
   id: 'DOM-id',                       // The DOM id of a container for the gauge (e.g. a div)
   theme: 'basic',                     // The name of a predefined theme to base this gauge off
-  radius: 0.95,                       // A value between 0 and 1 proportional to the size of the radius within the container
+  radius: 0.95,                       // A value in radius units (0..1)
   range: {                            // Start of the range object
     min: 0,                           // The minimum value of the gauge
     max: 150,                         // The maximum value of the gauge
@@ -190,20 +198,20 @@ TunguskaGauge.easing = {
   ],
   easeIn: [
     [0, 0],
-    [0.42, 0],
-    [1, 1],
+    [0.2, 0.5],
+    [0.8, 0.95],
     [1, 1]
   ],
   easeOut: [
     [0, 0],
-    [0, 0],
-    [0.58, 1],
+    [0.2, 0.05],
+    [0.8, 0.5],
     [1, 1]
   ],
   easeInOut: [
     [0, 0],
-    [0.42, 0],
-    [0.58, 1],
+    [0.2, 0.1],
+    [0.8, 0.9],
     [1, 1]
   ]
 };
@@ -327,5 +335,7 @@ tbd
 ## Todo
 
 - Improve Annotation.
-- Maybe I should be using requestAnimationFrame.
+- Include requestAnimationFrame polyfill.
 - Better handling of options overrides.
+- Better easing: bespoke functions, rather than cubic Bezier interpolation
+

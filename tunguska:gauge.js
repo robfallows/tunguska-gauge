@@ -68,7 +68,7 @@ TunguskaGauge.themes = {
       shadowColor: '#000',
       dynamics: {
         duration: 150,
-        easing: 'easeIn'
+        easing: 'bounce'
       }
     },
     tick: {
@@ -129,20 +129,20 @@ TunguskaGauge.easing = {
   ],
   easeIn: [
     [0, 0],
-    [0.42, 0],
-    [1, 1],
+    [0.2, 0.5],
+    [0.8, 0.95],
     [1, 1]
   ],
   easeOut: [
     [0, 0],
-    [0, 0],
-    [0.58, 1],
+    [0.2, 0.05],
+    [0.8, 0.5],
     [1, 1]
   ],
   easeInOut: [
     [0, 0],
-    [0.42, 0],
-    [0.58, 1],
+    [0.2, 0.1],
+    [0.8, 0.9],
     [1, 1]
   ]
 };
@@ -321,6 +321,12 @@ TunguskaGauge.prototype = {
     } else {
       this.__registerImages(0);
     }
+    //                                                      Set up hidden canvas for double-buffering of pointers
+    this.pointerCanvas = document.createElement('canvas'),
+      this.pointerCanvas.setAttribute('height', this.height);
+    this.pointerCanvas.setAttribute('width', this.width);
+    this.pointerContext = this.pointerCanvas.getContext('2d');
+    this.pointerContext.translate(w / 2, h / 2); //         Move origin to canvas centre
     this.lastValue = null;
     this.initialised = false;
     return this;
@@ -335,7 +341,7 @@ TunguskaGauge.prototype = {
    * tWay is in the range 0..1 and is the time waypoint for which a relative value is to be computed.
    * It corresponds to a proportion of distance along the Beziér curve.
    * ==================================================
-   * Based off (his parameters were the wrong way round):
+   * Based off:
    * 13thParallel.org Beziér Curve Code
    * by Dan Pupius (www.pupius.net)
    * http://www.13thparallel.org/archive/bezier-curves/
@@ -595,7 +601,7 @@ TunguskaGauge.prototype = {
     }
   },
 
-  __drawPointer: function(p, pointerValue) { //             Draws a pointer
+  __drawPointer: function(p, pointerValue) { //             Draws a pointer into the hidden canvas
     'use strict';
     var angle,
       context,
@@ -626,53 +632,54 @@ TunguskaGauge.prototype = {
     }
     xDirection = (sweep < 0) ? -1 : 1;
 
+    //                                                      Pointer & shadow come from images
     if (('shadow' in themePointer) || ('image' in themePointer)) {
       pp = self.cachedCanvas[p];
       if (('shadow' in themePointer) && ('name' in themePointer.shadow)) {
-        context = self.context[3];
+        context = self.pointerContext;
         context.save();
         context.translate(themePointer.shadowX, themePointer.shadowY);
         context.rotate((xDirection * angle) - Math.PI / 2);
         context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
-        context.drawImage(pp.shadow, 0, 0); //            Image comes from canvas cache
+        context.drawImage(pp.shadow, 0, 0); //              Image comes from canvas cache
         context.restore();
       }
       if (('image' in themePointer) && ('name' in themePointer.image)) {
-        context = self.context[3];
+        context = self.pointerContext;
         context.save();
         context.rotate((xDirection * angle) - Math.PI / 2);
         context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
-        context.drawImage(pp.image, 0, 0); //            Image comes from canvas cache
+        context.drawImage(pp.image, 0, 0); //             Image comes from canvas cache
         context.restore();
       }
-    } else {
-      self.context[3].save();
+    } else { //                                             Pointer & shadow are rendered
+      self.pointerContext.save();
       if ('alpha' in themePointer) {
-        self.context[3].globalAlpha = themePointer.alpha;
+        self.pointerContext.globalAlpha = themePointer.alpha;
       }
       if ('color' in themePointer) {
-        self.context[3].strokeStyle = themePointer.color;
+        self.pointerContext.strokeStyle = themePointer.color;
       }
       if ('lineWidth' in themePointer) {
-        self.context[3].lineWidth = themePointer.lineWidth;
+        self.pointerContext.lineWidth = themePointer.lineWidth;
       }
       if ('fillColor' in themePointer) {
-        self.context[3].fillStyle = themePointer.fillColor;
+        self.pointerContext.fillStyle = themePointer.fillColor;
       }
       if ('shadowX' in themePointer) {
-        self.context[3].shadowOffsetX = themePointer.shadowX;
+        self.pointerContext.shadowOffsetX = themePointer.shadowX;
       }
       if ('shadowY' in themePointer) {
-        self.context[3].shadowOffsetY = themePointer.shadowY;
+        self.pointerContext.shadowOffsetY = themePointer.shadowY;
       }
       if ('shadowBlur' in themePointer) {
-        self.context[3].shadowBlur = themePointer.shadowBlur;
+        self.pointerContext.shadowBlur = themePointer.shadowBlur;
       }
       if ('shadowColor' in themePointer) {
-        self.context[3].shadowColor = themePointer.shadowColor;
+        self.pointerContext.shadowColor = themePointer.shadowColor;
       }
 
-      self.context[3].beginPath();
+      self.pointerContext.beginPath();
       for (i in themePointer.points) {
         xy = themePointer.points[i];
         x = xy[0] * self.gaugeRadius;
@@ -682,19 +689,19 @@ TunguskaGauge.prototype = {
         x = xDirection * Math.sin(angle + theta) * deltaR;
         y = -Math.cos(angle + theta) * deltaR;
         if (+i === 0) {
-          self.context[3].moveTo(x, y);
+          self.pointerContext.moveTo(x, y);
         } else {
-          self.context[3].lineTo(x, y);
+          self.pointerContext.lineTo(x, y);
         }
       }
-      self.context[3].closePath();
+      self.pointerContext.closePath();
       if (themePointer.lineWidth) {
-        self.context[3].stroke();
+        self.pointerContext.stroke();
       }
       if (themePointer.fillColor) {
-        self.context[3].fill();
+        self.pointerContext.fill();
       }
-      self.context[3].restore();
+      self.pointerContext.restore();
     }
   },
 
@@ -768,10 +775,10 @@ TunguskaGauge.prototype = {
       this.context[2].restore();
     }
 
-    // Draw the pointer(s)
+    //                                                      Draw the pointer(s) on the hidden canvas
     if (this.theme.pointer) {
-      self.context[3].clearRect(-self.width / 2, -self.height / 2, self.width, self.height);
-      this.context[3].save();
+      this.pointerContext.clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
+      this.pointerContext.save();
       if (pValue instanceof Array) {
         var l = pValue.length;
         for (var p = 0; p < l; p++) {
@@ -780,47 +787,54 @@ TunguskaGauge.prototype = {
       } else {
         this.__drawPointer(0, pValue);
       }
-      this.context[3].restore();
+      this.pointerContext.restore();
+      //                                                    Overwrite the visible canvas with the hidden
+      this.context[3].clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
+      this.context[3].drawImage(this.pointerCanvas, -this.width / 2, -this.height / 2);
     }
   },
 
   __animate: function(value) {
     'use strict';
-    var last = this.__clone(this.lastValue);
-    this.__cycle(0, value, last);
-  },
-
-  __cycle: function(t, value, last) {
-    'use strict';
-    var i, v;
-    var self = this;
-    var ti;
+    var started = false;
     var wrap = ('callback' in this.theme) ? 'wrap' in this.theme.callback : false;
+    var last = this.__clone(this.lastValue);
+    var count = (value instanceof Array) ? value.length : 1;
+    var self = this;
 
-    if (value instanceof Array) {
-      v = [];
-      for (i = 0; i < value.length; i++) {
-        if (wrap && Math.abs(value[i] - self.theme.range.min) < 1e-3) {
-          last[i] = self.theme.range.min - 1;
+    function step(timestamp) {
+      var i, v, t, ti, tt;
+      if (!started) {
+        started = timestamp; //                             May be a hi-res timestamp
+      }
+      t = timestamp - started; //                           0..duration
+      if (value instanceof Array) {
+        v = [];
+        ti = [];
+        tt = 0;
+        for (i = 0; i < value.length; i++) {
+          if (wrap && Math.abs(value[i] - self.theme.range.min) < 1e-3) {
+            last[i] = self.theme.range.min - 1;
+          }
+          ti[i] = Math.min(1, t / self.theme.pointer[i].dynamics.duration);
+          tt += ti[i];
+          v[i] = last[i] + (value[i] - last[i]) * self.__tween(ti[i], self.theme.pointer[i].dynamics.easing);
         }
-        ti = t / self.theme.pointer[i].dynamics.duration;
-        v[i] = last[i] + (value[i] - last[i]) * self.__tween(ti, self.theme.pointer[i].dynamics.easing);
+      } else {
+        if (wrap && Math.abs(value - self.theme.range.min) < 1e-3) {
+          last = self.theme.range.min - 1;
+        }
+        tt = Math.min(1, t / self.theme.pointer.dynamics.duration);
+        v = last + (value - last) * self.__tween(tt, self.theme.pointer.dynamics.easing);
       }
-    } else {
-      if (wrap && Math.abs(value - self.theme.range.min) < 1e-3) {
-        last = self.theme.range.min - 1;
+      if (tt <= count) {
+        self.__update(v);
+        window.requestAnimationFrame(step);
+      } else {
+        self.lastValue = self.__clone(v);
       }
-      ti = t / self.theme.pointer.dynamics.duration;
-      v = last + (value - last) * self.__tween(ti, self.theme.pointer.dynamics.easing);
     }
-    self.__update(v);
-    if (ti <= 1) {
-      setTimeout(function() {
-        self.__cycle(t + 16, value, last);
-      }, 16);
-    } else {
-      this.lastValue = this.__clone(value);
-    }
+    window.requestAnimationFrame(step);
   },
 
   __render: function(pointerValue) {
@@ -973,3 +987,4 @@ TunguskaGauge.prototype = {
     return this.lastValue;
   }
 }
+
