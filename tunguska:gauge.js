@@ -1,19 +1,15 @@
 ;
 /*
 The MIT License (MIT)
-
 Copyright (c) 2015 Rob Fallows
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,7 +39,7 @@ TunguskaGauge.config = {
 
 // TunguskaGauge.themes contains basic themes
 TunguskaGauge.themes = {
-  none:{},
+  none: {},
   basic: {
     radius: 0.85,
     range: {
@@ -287,7 +283,7 @@ TunguskaGauge.prototype = {
       this.canvas[i].setAttribute('width', w); //           Make each canvas the same requested size.
       this.canvas[i].setAttribute('height', h);
       myZ += 1; //                                          Increment z-index and set canvas layer's style
-      style = 'position:absolute;top:0;left:0;z-index:' + myZ + ';width:' + w + 'px;height:' + h + 'px;';
+      style = 'position:absolute;top:0;left:0;z-index:' + myZ + ';';
       this.canvas[i].setAttribute('style', style);
 
       this.context[i] = this.canvas[i].getContext('2d'); // Initialise each canvas context
@@ -320,7 +316,7 @@ TunguskaGauge.prototype = {
         this.__registerImages(i);
       }
     } else {
-      this.__registerImages(0);
+      this.__registerImages();
     }
     //                                                      Set up hidden canvas for double-buffering of pointers
     this.pointerCanvas = document.createElement('canvas'),
@@ -553,51 +549,59 @@ TunguskaGauge.prototype = {
       themePointer = this.theme.pointer,
       xDirection;
 
-    self.cachedCanvas[p] = {
-      image: document.createElement('canvas'),
-      imageContext: null,
-      shadow: document.createElement('canvas'),
-      shadowContext: null
+    if (typeof p === 'undefined') {
+      p = 0;
+    } else {
+      themePointer = this.theme.pointer[p];
     }
-    pp = self.cachedCanvas[p];
-    pp.image.setAttribute('height', self.height);
-    pp.image.setAttribute('width', self.width);
-    pp.imageContext = self.cachedCanvas[p].image.getContext('2d');
-    pp.shadow.setAttribute('height', self.height);
-    pp.shadow.setAttribute('width', self.width);
-    pp.shadowContext = self.cachedCanvas[p].shadow.getContext('2d');
-    if (('shadow' in themePointer) && ('name' in themePointer.shadow)) {
-      sweep = 360;
-      if (('range' in self.theme) && ('sweep' in self.theme.range)) {
-        sweep = self.theme.range.sweep;
+
+    if (('image' in themePointer) || ('shadow' in themePointer)) {
+      self.cachedCanvas[p] = {
+        image: document.createElement('canvas'),
+        imageContext: null,
+        shadow: document.createElement('canvas'),
+        shadowContext: null
       }
-      xDirection = (sweep < 0) ? -1 : 1;
-      bgimg = new Image();
-      bgimg.src = themePointer.shadow.name;
-      bgimg.onload = function() {
-        pp.shadowContext.drawImage(bgimg, 0, 0);
-        context = self.context[3]; //                       We need to draw an initial position, so that
-        //                                                  there is something to see prior to first update
-        context.save();
-        context.translate(themePointer.shadowX, themePointer.shadowY);
-        context.rotate((xDirection * self.__scaleValue(self.theme.range.min)) - Math.PI / 2);
-        context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
-        context.drawImage(bgimg, 0, 0);
-        context.restore();
+      pp = self.cachedCanvas[p];
+      pp.image.setAttribute('height', self.height);
+      pp.image.setAttribute('width', self.width);
+      pp.imageContext = self.cachedCanvas[p].image.getContext('2d');
+      pp.shadow.setAttribute('height', self.height);
+      pp.shadow.setAttribute('width', self.width);
+      pp.shadowContext = self.cachedCanvas[p].shadow.getContext('2d');
+      if (('shadow' in themePointer) && ('name' in themePointer.shadow)) {
+        sweep = 360;
+        if (('range' in self.theme) && ('sweep' in self.theme.range)) {
+          sweep = self.theme.range.sweep;
+        }
+        xDirection = (sweep < 0) ? -1 : 1;
+        bgimg = new Image();
+        bgimg.src = themePointer.shadow.name;
+        bgimg.onload = function() {
+          pp.shadowContext.drawImage(bgimg, 0, 0);
+          context = self.context[3]; //                     We need to draw an initial position, so that
+          //                                                there is something to see prior to first update
+          context.save();
+          context.translate(themePointer.shadowX, themePointer.shadowY);
+          context.rotate((xDirection * self.__scaleValue(self.theme.range.min)) - Math.PI / 2);
+          context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
+          context.drawImage(bgimg, 0, 0);
+          context.restore();
+        }
       }
-    }
-    if (('image' in themePointer) && ('name' in themePointer.image)) {
-      fgimg = new Image();
-      fgimg.src = themePointer.image.name;
-      fgimg.onload = function() {
-        pp.imageContext.drawImage(fgimg, 0, 0);
-        context = self.context[3]; //                       We need to draw an initial position, so that
-        //                                                  there is something to see prior to first update
-        context.save();
-        context.rotate((xDirection * self.__scaleValue(self.theme.range.min)) - Math.PI / 2);
-        context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
-        context.drawImage(fgimg, 0, 0);
-        context.restore();
+      if (('image' in themePointer) && ('name' in themePointer.image)) {
+        fgimg = new Image();
+        fgimg.src = themePointer.image.name;
+        fgimg.onload = function() {
+          pp.imageContext.drawImage(fgimg, 0, 0);
+          context = self.context[3]; //                     We need to draw an initial position, so that
+          //                                                there is something to see prior to first update
+          context.save();
+          context.rotate((xDirection * self.__scaleValue(self.theme.range.min)) - Math.PI / 2);
+          context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
+          context.drawImage(fgimg, 0, 0);
+          context.restore();
+        }
       }
     }
   },
@@ -650,7 +654,7 @@ TunguskaGauge.prototype = {
         context.save();
         context.rotate((xDirection * angle) - Math.PI / 2);
         context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
-        context.drawImage(pp.image, 0, 0); //             Image comes from canvas cache
+        context.drawImage(pp.image, 0, 0); //               Image comes from canvas cache
         context.restore();
       }
     } else { //                                             Pointer & shadow are rendered
@@ -821,11 +825,12 @@ TunguskaGauge.prototype = {
           tt += ti[i];
           v[i] = last[i] + (value[i] - last[i]) * self.__tween(ti[i], self.theme.pointer[i].dynamics.easing);
         }
+        tt += 0.01;
       } else {
         if (wrap && Math.abs(value - self.theme.range.min) < 1e-3) {
           last = self.theme.range.min - 1;
         }
-        tt = Math.min(1, t / self.theme.pointer.dynamics.duration);
+        tt = t / self.theme.pointer.dynamics.duration;
         v = last + (value - last) * self.__tween(tt, self.theme.pointer.dynamics.easing);
       }
       if (tt <= count) {
