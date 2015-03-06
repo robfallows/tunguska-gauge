@@ -806,6 +806,7 @@ TunguskaGauge.prototype = {
     var last = this.__clone(this.lastValue);
     var count = (value instanceof Array) ? value.length : 1;
     var self = this;
+    var done;
 
     function step(timestamp) {
       var i, v, t, ti, tt;
@@ -817,21 +818,24 @@ TunguskaGauge.prototype = {
         v = [];
         ti = [];
         tt = 0;
+        done = false;
         for (i = 0; i < value.length; i++) {
           if (wrap && Math.abs(value[i] - self.theme.range.min) < 1e-3) {
             last[i] = self.theme.range.min - 1;
           }
-          ti[i] = Math.min(1, t / self.theme.pointer[i].dynamics.duration);
-          tt += ti[i];
+          ti[i] = t / self.theme.pointer[i].dynamics.duration;
           v[i] = last[i] + (value[i] - last[i]) * self.__tween(ti[i], self.theme.pointer[i].dynamics.easing);
         }
-        tt += 0.01;
+        for (i = 0; i < value.length; i++) {
+          done = done && (ti[i] > 1);
+        }
       } else {
         if (wrap && Math.abs(value - self.theme.range.min) < 1e-3) {
           last = self.theme.range.min - 1;
         }
         tt = t / self.theme.pointer.dynamics.duration;
         v = last + (value - last) * self.__tween(tt, self.theme.pointer.dynamics.easing);
+        done = (tt > 1);
       }
       if (tt <= count) {
         self.__update(v);
