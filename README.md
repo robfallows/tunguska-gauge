@@ -12,7 +12,7 @@ meteor add tunguska:gauge
 
 # Demo
 
-Simple gauge (random numbers served from meteor.com): http://tunguska-gauge-demo.meteor.com
+http://tunguska-gauge-demo.meteor.com
 
 # Basic Usage
 
@@ -356,7 +356,7 @@ overall default theme (currently "basic").
 
 ###Basic
 
-Simple gauge (random numbers served from meteor.com): http://tunguska-gauge-demo.meteor.com
+Set of five demo gauges (the first has random numbers served from meteor.com as a pub/sub): http://tunguska-gauge-demo.meteor.com
 
 GIT repo: https://github.com/robfallows/tunguska-gauge-demo
 
