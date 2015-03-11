@@ -354,7 +354,7 @@ overall default theme (currently "basic").
 
 ## Examples
 
-###Basic
+### Basic
 
 Set of five demo gauges (the first has random numbers served from meteor.com as a pub/sub): http://tunguska-gauge-demo.meteor.com
 
@@ -365,9 +365,10 @@ GIT repo: https://github.com/robfallows/tunguska-gauge-demo
 - Themeroller.
 - Improve Annotation.
 - Include requestAnimationFrame polyfill.
-- Better handling of options overrides.
+- ~~Better handling of options overrides.~~
 - Better easing: bespoke functions, rather than cubic Bezier interpolation
-- More demo gauges.
+- ~~More demo gauges.~~
+- Non-linear scales (vu-meters, anyone?)
 
 ## Licence
 
