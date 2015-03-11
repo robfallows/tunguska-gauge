@@ -179,6 +179,41 @@ TunguskaGauge.prototype = {
     }
   },
 
+  // Overwrite based off __clone()
+  __overWrite: function(copy, obj) {
+    'use strict';
+    if ('undefined' === typeof copy) {
+      copy = obj;
+    } else {
+      // Handle the 3 simple types, and null or undefined
+      if (null === obj || 'object' !== typeof obj) {
+        copy = obj;
+        return obj;
+        // Handle Date
+      } else if (obj instanceof Date) {
+        copy = new Date();
+        copy.setTime(obj.getTime());
+
+        // Handle Array
+      } else if (obj instanceof Array) {
+        for (var i = 0, len = obj.length; i < len; i++) {
+          copy[i] = obj[i];
+        }
+
+        // Handle Object
+      } else if (obj instanceof Object) {
+        for (var attr in obj) {
+          if (obj.hasOwnProperty(attr)) {
+            var next = this.__overWrite(copy[attr], obj[attr]);
+            if ('undefined' !== typeof next) {
+              copy[attr] = next;
+            }
+          }
+        }
+      }
+    }
+  },
+
   // Initialise
   __init: function(options) {
     'use strict';
@@ -186,7 +221,6 @@ TunguskaGauge.prototype = {
       DOMid,
       h,
       i,
-      j,
       lock,
       myZ,
       self,
@@ -215,6 +249,7 @@ TunguskaGauge.prototype = {
         case 'id':
         case 'theme':
         case 'radius':
+          this.theme[i] = that;
           break;
 
         case 'range':
@@ -223,17 +258,13 @@ TunguskaGauge.prototype = {
         case 'digital':
         case 'outer':
         case 'callback':
-          if (!this.theme[i]) {
-            this.theme[i] = {};
-          }
-          for (j in that) {
-            this.theme[i][j] = this.__clone(that[j]);
-          }
-          break;
-
         case 'tick':
         case 'pointer':
-          this.theme[i] = this.__clone(that);
+          if ('undefined' === typeof this.theme[i]) {
+            this.theme[i] = that;
+          } else {
+            this.__overWrite(this.theme[i], that);
+          }
           break;
 
         default:
@@ -319,8 +350,8 @@ TunguskaGauge.prototype = {
       this.__registerImages();
     }
     //                                                      Set up hidden canvas for double-buffering of pointers
-    this.pointerCanvas = document.createElement('canvas'),
-      this.pointerCanvas.setAttribute('height', this.height);
+    this.pointerCanvas = document.createElement('canvas');
+    this.pointerCanvas.setAttribute('height', this.height);
     this.pointerCanvas.setAttribute('width', this.width);
     this.pointerContext = this.pointerCanvas.getContext('2d');
     this.pointerContext.translate(w / 2, h / 2); //         Move origin to canvas centre
@@ -561,7 +592,7 @@ TunguskaGauge.prototype = {
         imageContext: null,
         shadow: document.createElement('canvas'),
         shadowContext: null
-      }
+      };
       pp = self.cachedCanvas[p];
       pp.image.setAttribute('height', self.height);
       pp.image.setAttribute('width', self.width);
@@ -587,7 +618,7 @@ TunguskaGauge.prototype = {
           context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
           context.drawImage(bgimg, 0, 0);
           context.restore();
-        }
+        };
       }
       if (('image' in themePointer) && ('name' in themePointer.image)) {
         fgimg = new Image();
@@ -601,7 +632,7 @@ TunguskaGauge.prototype = {
           context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
           context.drawImage(fgimg, 0, 0);
           context.restore();
-        }
+        };
       }
     }
   },
@@ -996,5 +1027,4 @@ TunguskaGauge.prototype = {
     'use strict';
     return this.lastValue;
   }
-}
-
+};

@@ -1,6 +1,6 @@
 Package.describe({
   name: 'tunguska:gauge',
-  version: '1.0.4',
+  version: '1.0.5',
   summary: 'Highly configurable, reactive gauges',
   git: 'https://github.com/robfallows/tunguska-gauge.git',
   documentation: 'README.md'
