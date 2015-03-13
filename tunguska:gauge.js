@@ -24,7 +24,7 @@ THE SOFTWARE.
  *
  * @name TunguskaGauge
  * @author Rob Fallows
- * @version 1.0.6
+ * @version 1.0.7
  * @return {object} TunguskaGauge.
  */
 TunguskaGauge = function(options) {
@@ -221,14 +221,9 @@ TunguskaGauge.prototype = {
       i,
       lock,
       myZ,
-      self,
-      selfLeft,
-      selfTop,
       style,
       that,
-      thbgimg,
       theme,
-      thfgimg,
       w,
       z;
 
@@ -321,26 +316,6 @@ TunguskaGauge.prototype = {
       this.context[i].translate(w / 2, h / 2); //           Move origin to canvas centre
     }
 
-    if (('background' in this.theme) && ('image' in this.theme.background)) {
-      thbgimg = new Image();
-      self = this;
-      selfLeft = this.theme.background.left || -this.width / 2;
-      selfTop = this.theme.background.top || -this.height / 2;
-      thbgimg.onload = function() {
-        self.context[0].drawImage(thbgimg, selfLeft, selfTop);
-      };
-      thbgimg.src = this.theme.background.image;
-    }
-    if (('foreground' in this.theme) && ('image' in this.theme.foreground)) {
-      thfgimg = new Image();
-      self = this;
-      selfLeft = this.theme.foreground.left || -this.width / 2;
-      selfTop = this.theme.foreground.top || -this.height / 2;
-      thfgimg.onload = function() {
-        self.context[4].drawImage(thfgimg, selfLeft, selfTop);
-      };
-      thfgimg.src = this.theme.foreground.image;
-    }
     //                                                      If there are any image pointers or shadows, cache them.
     if (this.theme.pointer instanceof Array) {
       for (i = 0; i < this.theme.pointer.length; i++) {
@@ -414,6 +389,7 @@ TunguskaGauge.prototype = {
   },
 
   __clear: function(c) {
+    'use strict';
     this.context[c].clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
   },
 
@@ -424,7 +400,6 @@ TunguskaGauge.prototype = {
       ctx,
       radius,
       radScale;
-    this.__clear(0);
     if (('outer' in this.theme) && ('range' in this.theme)) {
       ctx = this.context[1];
       ctx.save();
@@ -751,7 +726,6 @@ TunguskaGauge.prototype = {
 
   __update: function(pointerValue) {
     'use strict';
-    var self = this;
     var i;
     var pValue;
     if (!('render' in this.theme) || this.theme.render) {
@@ -844,7 +818,6 @@ TunguskaGauge.prototype = {
     var started = false;
     var wrap = ('callback' in this.theme) ? 'wrap' in this.theme.callback : false;
     var last = this.__clone(this.lastValue);
-    var count = (value instanceof Array) ? value.length : 1;
     var self = this;
     var done;
 
@@ -905,20 +878,65 @@ TunguskaGauge.prototype = {
 
   __render: function(pointerValue) {
     'use strict';
+    var pValue,
+      self,
+      selfLeft,
+      selfTop,
+      thbgimg,
+      thfgimg;
+
+    this.context[0].save();
+    this.__clear(0);
+    if (('background' in this.theme) && ('image' in this.theme.background)) {
+      thbgimg = new Image();
+      self = this;
+      selfLeft = this.theme.background.left || -this.width / 2;
+      selfTop = this.theme.background.top || -this.height / 2;
+      thbgimg.onload = function() {
+        self.context[0].drawImage(thbgimg, selfLeft, selfTop);
+        self.__renderScale();
+      };
+      thbgimg.src = this.theme.background.image;
+    } else {
+      this.__renderScale();
+    }
+    if (('foreground' in this.theme) && ('image' in this.theme.foreground)) {
+      thfgimg = new Image();
+      self = this;
+      selfLeft = this.theme.foreground.left || -this.width / 2;
+      selfTop = this.theme.foreground.top || -this.height / 2;
+      thfgimg.onload = function() {
+        self.context[4].drawImage(thfgimg, selfLeft, selfTop);
+      };
+      thfgimg.src = this.theme.foreground.image;
+    }
+    this.context[0].restore();
+    this.pointerValue = pointerValue;
+    if ('callback' in this.theme) {
+      if ('pointer' in this.theme.callback) {
+        pValue = this.theme.callback.pointer(pointerValue);
+      }
+    } else {
+      pValue = pointerValue;
+    }
+    this.__update(pValue);
+  },
+
+  __renderScale: function() {
+    'use strict';
     var a,
       finish,
       first,
       i,
       interval,
       last,
+      start,
       majorFirst,
       majorInterval,
       majorLast,
       minorFirst,
       minorInterval,
-      minorLast,
-      pValue,
-      start;
+      minorLast;
 
     start = 0;
     finish = 100;
@@ -926,7 +944,6 @@ TunguskaGauge.prototype = {
     majorInterval = 10;
 
     this.context[0].save();
-
     if ('outer' in this.theme) { //                     Draw the outer edge of the gauge
       this.__outerArc();
     }
@@ -994,15 +1011,6 @@ TunguskaGauge.prototype = {
       }
     }
     this.context[0].restore();
-    this.pointerValue = pointerValue;
-    if ('callback' in this.theme) {
-      if ('pointer' in this.theme.callback) {
-        pValue = this.theme.callback.pointer(pointerValue);
-      }
-    } else {
-      pValue = pointerValue;
-    }
-    this.__update(pValue);
   },
 
   set: function(value) {
@@ -1064,6 +1072,7 @@ TunguskaGauge.prototype = {
   },
 
   redraw: function(value) {
+    'use strict';
     this.theme.render = true;
     if ('undefined' === typeof value) {
       this.__render(this.lastValue);
