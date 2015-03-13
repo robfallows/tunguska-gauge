@@ -24,7 +24,7 @@ THE SOFTWARE.
  *
  * @name TunguskaGauge
  * @author Rob Fallows
- * @version 1.0.0
+ * @version 1.0.6
  * @return {object} TunguskaGauge.
  */
 TunguskaGauge = function(options) {
@@ -187,7 +187,7 @@ TunguskaGauge.prototype = {
     } else {
       // Handle the 3 simple types, and null or undefined
       if (null === obj || 'object' !== typeof obj) {
-        copy = obj;
+        //copy = obj;
         return obj;
         // Handle Date
       } else if (obj instanceof Date) {
@@ -196,9 +196,7 @@ TunguskaGauge.prototype = {
 
         // Handle Array
       } else if (obj instanceof Array) {
-        for (var i = 0, len = obj.length; i < len; i++) {
-          copy[i] = obj[i];
-        }
+        return obj;
 
         // Handle Object
       } else if (obj instanceof Object) {
@@ -247,19 +245,21 @@ TunguskaGauge.prototype = {
       switch (i) {
 
         case 'id':
-        case 'theme':
         case 'radius':
+        case 'theme':
           this.theme[i] = that;
           break;
 
-        case 'range':
         case 'background':
-        case 'foreground':
-        case 'digital':
-        case 'outer':
         case 'callback':
-        case 'tick':
+        case 'digital':
+        case 'events':
+        case 'foreground':
+        case 'outer':
         case 'pointer':
+        case 'range':
+        case 'render':
+        case 'tick':
           if ('undefined' === typeof this.theme[i]) {
             this.theme[i] = that;
           } else {
@@ -357,6 +357,7 @@ TunguskaGauge.prototype = {
     this.pointerContext.translate(w / 2, h / 2); //         Move origin to canvas centre
     this.lastValue = null;
     this.initialised = false;
+    this.animating = null; //                               Used for stopping an active requestAnimationFrame
     return this;
   },
 
@@ -412,6 +413,10 @@ TunguskaGauge.prototype = {
     return getBezier(tWay, TunguskaGauge.easing[easing]);
   },
 
+  __clear: function(c) {
+    this.context[c].clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
+  },
+
   __outerArc: function() { //                               Draws the outer bound of the scale
     'use strict';
     var angle0,
@@ -419,6 +424,7 @@ TunguskaGauge.prototype = {
       ctx,
       radius,
       radScale;
+    this.__clear(0);
     if (('outer' in this.theme) && ('range' in this.theme)) {
       ctx = this.context[1];
       ctx.save();
@@ -653,91 +659,93 @@ TunguskaGauge.prototype = {
       xy,
       xDirection,
       y;
-    angle = self.__scaleValue(pointerValue);
-    Radius = self.gaugeRadius;
+    if (!('render' in this.theme) || this.theme.render) {
+      angle = self.__scaleValue(pointerValue);
+      Radius = self.gaugeRadius;
 
-    if (!('pointer' in self.theme)) return;
-    themePointer = self.theme.pointer;
-    if (themePointer instanceof Array) {
-      themePointer = self.theme.pointer[p];
-    }
-
-    sweep = 360;
-    if (('range' in self.theme) && ('sweep' in self.theme.range)) {
-      sweep = self.theme.range.sweep;
-    }
-    xDirection = (sweep < 0) ? -1 : 1;
-
-    //                                                      Pointer & shadow come from images
-    if (('shadow' in themePointer) || ('image' in themePointer)) {
-      pp = self.cachedCanvas[p];
-      if (('shadow' in themePointer) && ('name' in themePointer.shadow)) {
-        context = self.pointerContext;
-        context.save();
-        context.translate(themePointer.shadowX, themePointer.shadowY);
-        context.rotate((xDirection * angle) - Math.PI / 2);
-        context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
-        context.drawImage(pp.shadow, 0, 0); //              Image comes from canvas cache
-        context.restore();
-      }
-      if (('image' in themePointer) && ('name' in themePointer.image)) {
-        context = self.pointerContext;
-        context.save();
-        context.rotate((xDirection * angle) - Math.PI / 2);
-        context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
-        context.drawImage(pp.image, 0, 0); //               Image comes from canvas cache
-        context.restore();
-      }
-    } else { //                                             Pointer & shadow are rendered
-      self.pointerContext.save();
-      if ('alpha' in themePointer) {
-        self.pointerContext.globalAlpha = themePointer.alpha;
-      }
-      if ('color' in themePointer) {
-        self.pointerContext.strokeStyle = themePointer.color;
-      }
-      if ('lineWidth' in themePointer) {
-        self.pointerContext.lineWidth = themePointer.lineWidth;
-      }
-      if ('fillColor' in themePointer) {
-        self.pointerContext.fillStyle = themePointer.fillColor;
-      }
-      if ('shadowX' in themePointer) {
-        self.pointerContext.shadowOffsetX = themePointer.shadowX;
-      }
-      if ('shadowY' in themePointer) {
-        self.pointerContext.shadowOffsetY = themePointer.shadowY;
-      }
-      if ('shadowBlur' in themePointer) {
-        self.pointerContext.shadowBlur = themePointer.shadowBlur;
-      }
-      if ('shadowColor' in themePointer) {
-        self.pointerContext.shadowColor = themePointer.shadowColor;
+      if (!('pointer' in self.theme)) return;
+      themePointer = self.theme.pointer;
+      if (themePointer instanceof Array) {
+        themePointer = self.theme.pointer[p];
       }
 
-      self.pointerContext.beginPath();
-      for (i in themePointer.points) {
-        xy = themePointer.points[i];
-        x = xy[0] * self.gaugeRadius;
-        y = xy[1] * self.gaugeRadius;
-        deltaR = Math.sqrt(x * x + y * y);
-        theta = Math.atan2(y, x);
-        x = xDirection * Math.sin(angle + theta) * deltaR;
-        y = -Math.cos(angle + theta) * deltaR;
-        if (+i === 0) {
-          self.pointerContext.moveTo(x, y);
-        } else {
-          self.pointerContext.lineTo(x, y);
+      sweep = 360;
+      if (('range' in self.theme) && ('sweep' in self.theme.range)) {
+        sweep = self.theme.range.sweep;
+      }
+      xDirection = (sweep < 0) ? -1 : 1;
+
+      //                                                      Pointer & shadow come from images
+      if (('shadow' in themePointer) || ('image' in themePointer)) {
+        pp = self.cachedCanvas[p];
+        if (('shadow' in themePointer) && ('name' in themePointer.shadow)) {
+          context = self.pointerContext;
+          context.save();
+          context.translate(themePointer.shadowX, themePointer.shadowY);
+          context.rotate((xDirection * angle) - Math.PI / 2);
+          context.translate(-themePointer.shadow.xOffset, -themePointer.shadow.yOffset);
+          context.drawImage(pp.shadow, 0, 0); //              Image comes from canvas cache
+          context.restore();
         }
+        if (('image' in themePointer) && ('name' in themePointer.image)) {
+          context = self.pointerContext;
+          context.save();
+          context.rotate((xDirection * angle) - Math.PI / 2);
+          context.translate(-themePointer.image.xOffset, -themePointer.image.yOffset);
+          context.drawImage(pp.image, 0, 0); //               Image comes from canvas cache
+          context.restore();
+        }
+      } else { //                                             Pointer & shadow are rendered
+        self.pointerContext.save();
+        if ('alpha' in themePointer) {
+          self.pointerContext.globalAlpha = themePointer.alpha;
+        }
+        if ('color' in themePointer) {
+          self.pointerContext.strokeStyle = themePointer.color;
+        }
+        if ('lineWidth' in themePointer) {
+          self.pointerContext.lineWidth = themePointer.lineWidth;
+        }
+        if ('fillColor' in themePointer) {
+          self.pointerContext.fillStyle = themePointer.fillColor;
+        }
+        if ('shadowX' in themePointer) {
+          self.pointerContext.shadowOffsetX = themePointer.shadowX;
+        }
+        if ('shadowY' in themePointer) {
+          self.pointerContext.shadowOffsetY = themePointer.shadowY;
+        }
+        if ('shadowBlur' in themePointer) {
+          self.pointerContext.shadowBlur = themePointer.shadowBlur;
+        }
+        if ('shadowColor' in themePointer) {
+          self.pointerContext.shadowColor = themePointer.shadowColor;
+        }
+
+        self.pointerContext.beginPath();
+        for (i in themePointer.points) {
+          xy = themePointer.points[i];
+          x = xy[0] * self.gaugeRadius;
+          y = xy[1] * self.gaugeRadius;
+          deltaR = Math.sqrt(x * x + y * y);
+          theta = Math.atan2(y, x);
+          x = xDirection * Math.sin(angle + theta) * deltaR;
+          y = -Math.cos(angle + theta) * deltaR;
+          if (+i === 0) {
+            self.pointerContext.moveTo(x, y);
+          } else {
+            self.pointerContext.lineTo(x, y);
+          }
+        }
+        self.pointerContext.closePath();
+        if (themePointer.lineWidth) {
+          self.pointerContext.stroke();
+        }
+        if (themePointer.fillColor) {
+          self.pointerContext.fill();
+        }
+        self.pointerContext.restore();
       }
-      self.pointerContext.closePath();
-      if (themePointer.lineWidth) {
-        self.pointerContext.stroke();
-      }
-      if (themePointer.fillColor) {
-        self.pointerContext.fill();
-      }
-      self.pointerContext.restore();
     }
   },
 
@@ -746,87 +754,88 @@ TunguskaGauge.prototype = {
     var self = this;
     var i;
     var pValue;
-
-    if (pointerValue instanceof Array) {
-      pValue = this.__clone(pointerValue);
-      this.lastValue = [];
-      for (i = 0; i < pointerValue.length; i++) {
-        if (!('dynamics' in this.theme.pointer[i])) {
-          this.theme.pointer[i].dynamics = {
+    if (!('render' in this.theme) || this.theme.render) {
+      if (pointerValue instanceof Array) {
+        pValue = this.__clone(pointerValue);
+        this.lastValue = [];
+        for (i = 0; i < pointerValue.length; i++) {
+          if (!('dynamics' in this.theme.pointer[i])) {
+            this.theme.pointer[i].dynamics = {
+              duration: 200,
+              easing: 'linear'
+            };
+          } else {
+            if (!('duration' in this.theme.pointer[i].dynamics)) {
+              this.theme.pointer[i].dynamics.duration = 200;
+            }
+            if (!('easing' in this.theme.pointer[i].dynamics)) {
+              this.theme.pointer[i].dynamics.easing = 'linear';
+            }
+          }
+          pValue[i] = pointerValue[i];
+          this.lastValue[i] = pointerValue[i];
+        }
+      } else {
+        if (!('dynamics' in this.theme.pointer)) {
+          this.theme.pointer.dynamics = {
             duration: 200,
-            easing: 'linear'
+            easing: 'bounce'
           };
         } else {
-          if (!('duration' in this.theme.pointer[i].dynamics)) {
-            this.theme.pointer[i].dynamics.duration = 200;
+          if (!('duration' in this.theme.pointer.dynamics)) {
+            this.theme.pointer.dynamics.duration = 200;
           }
-          if (!('easing' in this.theme.pointer[i].dynamics)) {
-            this.theme.pointer[i].dynamics.easing = 'linear';
+          if (!('easing' in this.theme.pointer.dynamics)) {
+            this.theme.pointer.dynamics.easing = 'bounce';
           }
         }
-        pValue[i] = pointerValue[i];
-        this.lastValue[i] = pointerValue[i];
+        pValue = pointerValue;
+        this.lastValue = pointerValue;
       }
-    } else {
-      if (!('dynamics' in this.theme.pointer)) {
-        this.theme.pointer.dynamics = {
-          duration: 200,
-          easing: 'bounce'
-        };
-      } else {
-        if (!('duration' in this.theme.pointer.dynamics)) {
-          this.theme.pointer.dynamics.duration = 200;
-        }
-        if (!('easing' in this.theme.pointer.dynamics)) {
-          this.theme.pointer.dynamics.easing = 'bounce';
-        }
-      }
-      pValue = pointerValue;
-      this.lastValue = pointerValue;
-    }
 
-    // Write the value
-    if (this.theme.digital) {
-      self.context[2].clearRect(-self.width / 2, -self.height / 2, self.width, self.height);
-      this.context[2].save();
-      if (this.theme.digital.color) {
-        this.context[2].fillStyle = this.theme.digital.color;
-      }
-      if (this.theme.digital.font) {
-        this.context[2].font = this.theme.digital.font;
-      }
-      var t = null;
-      if (this.theme.digital.callback) {
-        t = this.theme.digital.callback(this.pointerValue);
-      } else {
-        var v = Math.round(Math.abs(pValue), 0);
-        t = v + '';
-        if (v < 100) t = '0' + t;
-        if (v < 10) t = '0' + t;
-        if (pValue < 0) {
-          this.context[3].fillStyle = 'red';
+      // Write the value
+      if (this.theme.digital) {
+        this.__clear(2);
+        this.context[2].save();
+        if (this.theme.digital.color) {
+          this.context[2].fillStyle = this.theme.digital.color;
         }
+        if (this.theme.digital.font) {
+          this.context[2].font = this.theme.digital.font;
+        }
+        var t = null;
+        if (this.theme.digital.callback) {
+          t = this.theme.digital.callback(this.pointerValue);
+        } else {
+          var v = Math.round(Math.abs(pValue), 0);
+          t = v + '';
+          if (v < 100) t = '0' + t;
+          if (v < 10) t = '0' + t;
+          if (pValue < 0) {
+            this.context[3].fillStyle = 'red';
+          }
+        }
+        this.__text(2, t, this.theme.digital.left, this.theme.digital.top);
+        this.context[2].restore();
       }
-      this.__text(2, t, this.theme.digital.left, this.theme.digital.top);
-      this.context[2].restore();
-    }
 
-    //                                                      Draw the pointer(s) on the hidden canvas
-    if (this.theme.pointer) {
-      this.pointerContext.clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
-      this.pointerContext.save();
-      if (pValue instanceof Array) {
-        var l = pValue.length;
-        for (var p = 0; p < l; p++) {
-          this.__drawPointer(p, pValue[p]);
+      //                                                      Draw the pointer(s) on the hidden canvas
+      if (this.theme.pointer) {
+        this.pointerContext.clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
+        this.pointerContext.save();
+        if (pValue instanceof Array) {
+          var l = pValue.length;
+          for (var p = 0; p < l; p++) {
+            this.__drawPointer(p, pValue[p]);
+          }
+        } else {
+          this.__drawPointer(0, pValue);
         }
-      } else {
-        this.__drawPointer(0, pValue);
+        this.pointerContext.restore();
+        //                                                    Overwrite the visible canvas with the hidden
+        this.__clear(3);
+        this.context[3].drawImage(this.pointerCanvas, -this.width / 2, -this.height / 2);
       }
-      this.pointerContext.restore();
-      //                                                    Overwrite the visible canvas with the hidden
-      this.context[3].clearRect(-this.width / 2, -this.height / 2, this.width, this.height);
-      this.context[3].drawImage(this.pointerCanvas, -this.width / 2, -this.height / 2);
     }
   },
 
@@ -838,6 +847,12 @@ TunguskaGauge.prototype = {
     var count = (value instanceof Array) ? value.length : 1;
     var self = this;
     var done;
+
+    if (('events' in this.theme) && ('onPointerStart' in this.theme.events)) {
+      if ('function' === typeof this.theme.events.onPointerStart) {
+        this.theme.events.onPointerStart(this.theme, value);
+      }
+    }
 
     function step(timestamp) {
       var i, v, t, ti, tt;
@@ -868,14 +883,24 @@ TunguskaGauge.prototype = {
         v = last + (value - last) * self.__tween(tt, self.theme.pointer.dynamics.easing);
         done = (tt > 1);
       }
-      if (tt <= count) {
-        self.__update(v);
-        window.requestAnimationFrame(step);
-      } else {
+      if (done) {
         self.lastValue = self.__clone(v);
+        if (('events' in self.theme) && ('onPointerStop' in self.theme.events)) {
+          if ('function' === typeof self.theme.events.onPointerStop) {
+            self.theme.events.onPointerStop(self.theme, v);
+          }
+        }
+      } else {
+        self.__update(v);
+        if (('events' in self.theme) && ('onPointerSweep' in self.theme.events)) {
+          if ('function' === typeof self.theme.events.onPointerSweep) {
+            self.theme.events.onPointerSweep(self.theme, v);
+          }
+        }
+        this.animating = window.requestAnimationFrame(step);
       }
     }
-    window.requestAnimationFrame(step);
+    this.animating = window.requestAnimationFrame(step);
   },
 
   __render: function(pointerValue) {
@@ -985,6 +1010,9 @@ TunguskaGauge.prototype = {
     var i,
       match,
       pointerValue;
+    if (this.animating) {
+      window.cancelAnimationFrame(this.animating); //       Stop any current animation
+    }
     if (this.initialised) {
       this.pointerValue = value;
       if (this.theme.callback && this.theme.callback.pointer) {
@@ -1019,12 +1047,29 @@ TunguskaGauge.prototype = {
       }
     } else {
       this.initialised = true;
-      this.__render(value);
+      if (!('render' in this.theme) || this.theme.render) {
+        this.__render(value);
+      }
     }
   },
 
   get: function() {
     'use strict';
     return this.lastValue;
+  },
+
+  getTheme: function() {
+    'use strict';
+    return this.theme;
+  },
+
+  redraw: function(value) {
+    this.theme.render = true;
+    if ('undefined' === typeof value) {
+      this.__render(this.lastValue);
+    } else {
+      this.__render(value);
+    }
   }
 };
+
