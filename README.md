@@ -132,6 +132,12 @@ TunguskaGauge does not currently support non-circular gauges (e.g. ellipses).
       last: 150                       // Last tick in range units
     }
   },
+  events: {
+    onPointerStart: function(g, v) {},// Define event callbacks for when the pointer is about to sweep,
+    onPointerSweep: function(g, v) {},// is sweeping,
+    onPointerStop: function(g, v) {}  // or has finished sweeping. "g" is the gauge theme, "v" the pointer values
+  },
+  render: true,                       // Whether to render the gauge automatically
   pointer:                            // See below
 }
 ```
@@ -173,20 +179,34 @@ pointer: {                            // Start of pointer definition
   }
 }
 ```
+### Gauge Methods
 
-### Update or read a gauge
+#### Update pointer
 
-```
-someGauge.set(newValue);
-```
+`someGauge.set(newValue);`
 
-Where newValue is a simple pointer value, or an array of pointer values. You can also read a gauge to get its current value:
+Where newValue is a simple pointer value, or an array of pointer values.
 
-```
-var myValue = someGauge.get();
-```
+#### Read current pointer
+
+`var myValue = someGauge.get();`
 
 Where myValue will be set to a simple value or an array of values.
+
+#### Get reference to current gauge theme
+
+`var myTheme = someGauge.getTheme();`
+
+Permits direct getting/setting of theme, e.g. to change the duration of pointer[2]:
+
+`myTheme.pointer[2].dynamics.duration = 1000;`
+
+#### Redraw gauge
+
+`someGauge.redraw(value);`
+
+May also be used to initially draw the gauge if `render: false` was set in the instantiation options. Note that this also sets the `render`
+property to true. If specified, `value` sets the pointer value to use (a simple value or an array of values).
 
 ### Easing
 
