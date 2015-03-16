@@ -24,7 +24,7 @@ THE SOFTWARE.
  *
  * @name TunguskaGauge
  * @author Rob Fallows
- * @version 1.0.7
+ * @version 1.0.8
  * @return {object} TunguskaGauge.
  */
 TunguskaGauge = function(options) {
@@ -332,7 +332,7 @@ TunguskaGauge.prototype = {
     this.pointerContext.translate(w / 2, h / 2); //         Move origin to canvas centre
     this.lastValue = null;
     this.initialised = false;
-    this.animating = null; //                               Used for stopping an active requestAnimationFrame
+    this.animating = false; //                              Used for stopping an active requestAnimationFrame
     return this;
   },
 
@@ -837,7 +837,6 @@ TunguskaGauge.prototype = {
         v = [];
         ti = [];
         tt = 0;
-        done = false;
         for (i = 0; i < value.length; i++) {
           if (wrap && Math.abs(value[i] - self.theme.range.min) < 1e-3) {
             last[i] = self.theme.range.min - 1;
@@ -845,7 +844,8 @@ TunguskaGauge.prototype = {
           ti[i] = t / self.theme.pointer[i].dynamics.duration;
           v[i] = last[i] + (value[i] - last[i]) * self.__tween(ti[i], self.theme.pointer[i].dynamics.easing);
         }
-        for (i = 0; i < value.length; i++) {
+        done = ti[0] > 1;
+        for (i = 1; i < value.length; i++) {
           done = done && (ti[i] > 1);
         }
       } else {
@@ -863,6 +863,7 @@ TunguskaGauge.prototype = {
             self.theme.events.onPointerStop(self.theme, v);
           }
         }
+        self.animating = false;
       } else {
         self.__update(v);
         if (('events' in self.theme) && ('onPointerSweep' in self.theme.events)) {
@@ -870,7 +871,7 @@ TunguskaGauge.prototype = {
             self.theme.events.onPointerSweep(self.theme, v);
           }
         }
-        this.animating = window.requestAnimationFrame(step);
+        self.animating = window.requestAnimationFrame(step);
       }
     }
     this.animating = window.requestAnimationFrame(step);
@@ -1017,47 +1018,50 @@ TunguskaGauge.prototype = {
     'use strict';
     var i,
       match,
+      self = this,
       pointerValue;
-    if (this.animating) {
-      window.cancelAnimationFrame(this.animating); //       Stop any current animation
-    }
-    if (this.initialised) {
-      this.pointerValue = value;
-      if (this.theme.callback && this.theme.callback.pointer) {
-        pointerValue = this.theme.callback.pointer(value);
-      } else {
-        pointerValue = value;
-      }
-      if (this.lastValue !== null) {
-        if (pointerValue instanceof Array) {
-          match = true;
-          for (i = 0; i < pointerValue.length; i++) {
-            if (pointerValue[i] !== this.lastValue[i]) {
-              match = false;
-              break;
+    if (!this.animating) {
+      window.requestAnimationFrame(function(t) { //           Will only run if in focus
+        if (self.initialised) {
+          self.pointerValue = value;
+          if (self.theme.callback && self.theme.callback.pointer) {
+            pointerValue = self.theme.callback.pointer(value);
+          } else {
+            pointerValue = value;
+          }
+          self.pointerValue = value;
+          if (self.lastValue !== null) {
+            if (pointerValue instanceof Array) {
+              match = true;
+              for (i = 0; i < pointerValue.length; i++) {
+                if (pointerValue[i] !== self.lastValue[i]) {
+                  match = false;
+                  break;
+                }
+              }
+              if (match) return;
+            } else if (self.lastValue === pointerValue) {
+              return;
+            }
+            self.__animate(pointerValue);
+          } else {
+            self.__update(pointerValue);
+            if (pointerValue instanceof Array) {
+              self.lastValue = [];
+              for (i = 0; i < pointerValue.length; i++) {
+                self.lastValue[i] = pointerValue[i];
+              }
+            } else {
+              self.lastValue = pointerValue;
             }
           }
-          if (match) return;
-        } else if (this.lastValue === pointerValue) {
-          return;
-        }
-        this.__animate(pointerValue);
-      } else {
-        this.__update(pointerValue);
-        if (pointerValue instanceof Array) {
-          this.lastValue = [];
-          for (i = 0; i < pointerValue.length; i++) {
-            this.lastValue[i] = pointerValue[i];
-          }
         } else {
-          this.lastValue = pointerValue;
+          self.initialised = true;
+          if (!('render' in self.theme) || self.theme.render) {
+            self.__render(value);
+          }
         }
-      }
-    } else {
-      this.initialised = true;
-      if (!('render' in this.theme) || this.theme.render) {
-        this.__render(value);
-      }
+      });
     }
   },
 
