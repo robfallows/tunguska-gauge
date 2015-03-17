@@ -24,7 +24,7 @@ THE SOFTWARE.
  *
  * @name TunguskaGauge
  * @author Rob Fallows
- * @version 1.0.9
+ * @version 1.0.10
  * @return {object} TunguskaGauge.
  */
 TunguskaGauge = function(options) {
