@@ -24,7 +24,7 @@ THE SOFTWARE.
  *
  * @name TunguskaGauge
  * @author Rob Fallows
- * @version 1.0.8
+ * @version 1.0.9
  * @return {object} TunguskaGauge.
  */
 TunguskaGauge = function(options) {
@@ -856,6 +856,7 @@ TunguskaGauge.prototype = {
         v = last + (value - last) * self.__tween(tt, self.theme.pointer.dynamics.easing);
         done = (tt > 1);
       }
+      self.__update(v);
       if (done) {
         self.lastValue = self.__clone(v);
         if (('events' in self.theme) && ('onPointerStop' in self.theme.events)) {
@@ -865,7 +866,6 @@ TunguskaGauge.prototype = {
         }
         self.animating = false;
       } else {
-        self.__update(v);
         if (('events' in self.theme) && ('onPointerSweep' in self.theme.events)) {
           if ('function' === typeof self.theme.events.onPointerSweep) {
             self.theme.events.onPointerSweep(self.theme, v);
