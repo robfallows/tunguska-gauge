@@ -1,6 +1,6 @@
 Package.describe({
   name: 'tunguska:gauge',
-  version: '1.0.10',
+  version: '1.0.11',
   summary: 'Highly configurable, reactive gauges',
   git: 'https://github.com/robfallows/tunguska-gauge.git',
   documentation: 'README.md'
@@ -8,7 +8,7 @@ Package.describe({
 
 Package.onUse(function(api) {
   api.versionsFrom('1.0.3.1');
-  api.addFiles('tunguska:gauge.js');
+  api.addFiles('tunguska:gauge.js','client');
   api.export('TunguskaGauge','client');
 });
 
