@@ -1,6 +1,6 @@
 Package.describe({
   name: 'tunguska:gauge',
-  version: '1.0.11',
+  version: '1.0.12',
   summary: 'Highly configurable, reactive gauges',
   git: 'https://github.com/robfallows/tunguska-gauge.git',
   documentation: 'README.md'
@@ -13,7 +13,7 @@ Package.onUse(function(api) {
 });
 
 Package.onTest(function(api) {
-  api.use('tinytest');
-  api.use('tunguska:gauge');
-  api.addFiles('tunguska:gauge-tests.js');
+  api.use('mike:mocha-package','client');
+  api.use('tunguska:gauge','client');
+  api.addFiles('tests/gauge-tests.js','client');
 });

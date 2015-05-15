@@ -224,14 +224,16 @@ TunguskaGauge.prototype = {
       style,
       that,
       theme,
+      themePack,
       w,
       z;
 
     theme = options.theme || TunguskaGauge.config.theme;
     //                                                      Check for a theme pack. It will take precedence
-    theme = TunguskaGaugeThemePack[theme] || TunguskaGauge.themes[theme];
+    themePack = typeof TunguskaGaugeThemePack !== 'undefined';
+    theme = themePack ? TunguskaGaugeThemePack[theme] : TunguskaGauge.themes[theme];
     if (!theme) {
-      theme = TunguskaGaugeThemePack[TunguskaGauge.config.theme] || TunguskaGauge.themes[TunguskaGauge.config.theme];
+      theme = themePack ? TunguskaGaugeThemePack[TunguskaGauge.config.theme] : TunguskaGauge.themes[TunguskaGauge.config.theme];
     }
     this.theme = this.__clone(theme);
 
@@ -480,7 +482,7 @@ TunguskaGauge.prototype = {
       if ('max' in this.theme.range) {
         max = this.theme.range.max;
       }
-      range = max - min + 1;
+      range = max - min;
       if ('sweep' in this.theme.range) {
         sweep = this.theme.range.sweep;
       }
@@ -521,12 +523,10 @@ TunguskaGauge.prototype = {
     x1 = xDirection * Math.sin(angle) * this.gaugeRadius * tick.endAt;
     y1 = -Math.cos(angle) * this.gaugeRadius * tick.endAt;
     ctx.beginPath();
-    if (x0 && y0) {
+    if ((typeof x0 === 'number') && (typeof y0 === 'number') && (typeof x1 === 'number') && (typeof y1 === 'number')) {
       ctx.moveTo(x0, y0);
-      if (x1 && y1) {
-        ctx.lineTo(x1, y1);
-        ctx.stroke();
-      }
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
     }
 
     if (tick.legend) {
@@ -993,21 +993,15 @@ TunguskaGauge.prototype = {
         first = Math.min(first, majorFirst);
         last = Math.max(last, majorLast);
       }
-      interval = Math.min(minorInterval, majorInterval);
-      for (i = first; i <= last; i += interval) {
-        a = parseInt(i * 10, 10) / 10;
-        if (a % majorInterval === 0) {
-          if ('major' in this.theme.tick) {
-            if (a >= majorFirst && a <= majorLast) {
-              this.__drawTick(a, this.theme.tick.major);
-            }
-          }
-        } else {
-          if ('minor' in this.theme.tick) {
-            if (a >= minorFirst && a <= minorLast) {
-              this.__drawTick(a, this.theme.tick.minor);
-            }
-          }
+      //interval = Math.min(minorInterval, majorInterval);
+      if ('minor' in this.theme.tick) {
+        for (i = minorFirst; i<=minorLast; i+=minorInterval) {
+          this.__drawTick(i, this.theme.tick.minor);
+        }
+      }
+      if ('major' in this.theme.tick) {
+        for (i = majorFirst; i<=majorLast; i+=majorInterval) {
+          this.__drawTick(i, this.theme.tick.major);
         }
       }
     }
