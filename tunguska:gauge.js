@@ -1051,8 +1051,21 @@ TunguskaGauge.prototype = {
           }
         } else {
           self.initialised = true;
+          //if (!('render' in self.theme) || self.theme.render) {
+            //self.__render(value);
+          //}
           if (!('render' in self.theme) || self.theme.render) {
+            if (('events' in self.theme) && ('onPointerStart' in self.theme.events)) {
+              if ('function' === typeof self.theme.events.onPointerStart) {
+                self.theme.events.onPointerStart(self, value);
+              }
+            }
             self.__render(value);
+            if (('events' in self.theme) && ('onPointerStop' in self.theme.events)) {
+              if ('function' === typeof self.theme.events.onPointerStop) {
+                self.theme.events.onPointerStop(self, value);
+              }
+            }
           }
         }
       });
