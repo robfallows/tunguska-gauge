@@ -14,6 +14,8 @@ meteor add tunguska:gauge
 
 http://tunguska-gauge-demo.meteor.com
 
+![Demo Gauges](docs/gauges.png)
+
 # Basic Usage
 
 ## Instantiate a new gauge
@@ -382,6 +384,7 @@ GIT repo: https://github.com/robfallows/tunguska-gauge-demo
 
 ## Todo
 
+- ~~Tests~~
 - Themeroller.
 - Improve Annotation.
 - Include requestAnimationFrame polyfill.
@@ -389,6 +392,12 @@ GIT repo: https://github.com/robfallows/tunguska-gauge-demo
 - Better easing: bespoke functions, rather than cubic Bezier interpolation
 - ~~More demo gauges.~~
 - Non-linear scales (vu-meters, anyone?)
+
+## Tests
+
+Package testing courtesy [practicalmeteor:munit](https://atmospherejs.com/practicalmeteor/munit).
+
+![Test Results](docs/tests.png)
 
 ## Licence
 
