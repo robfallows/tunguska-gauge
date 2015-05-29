@@ -1,4 +1,35 @@
 ;
+// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+// http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
+ 
+// requestAnimationFrame polyfill by Erik Möller
+// fixes from Paul Irish and Tino Zijdel
+ 
+(function() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+ 
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+ 
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
+;
 /*
 The MIT License (MIT)
 Copyright (c) 2015 Rob Fallows
@@ -24,7 +55,7 @@ THE SOFTWARE.
  *
  * @name TunguskaGauge
  * @author Rob Fallows
- * @version 1.0.10
+ * @version 1.0.15
  * @return {object} TunguskaGauge.
  */
 TunguskaGauge = function(options) {
@@ -864,6 +895,7 @@ TunguskaGauge.prototype = {
             self.theme.events.onPointerStop(self.theme, v);
           }
         }
+        cancelAnimationFrame(self.animating);
         self.animating = false;
       } else {
         if (('events' in self.theme) && ('onPointerSweep' in self.theme.events)) {
@@ -1015,60 +1047,55 @@ TunguskaGauge.prototype = {
       self = this,
       pointerValue;
     if (!this.animating) {
-      window.requestAnimationFrame(function(t) { //           Will only run if in focus
-        if (self.initialised) {
-          self.pointerValue = value;
-          if (self.theme.callback && self.theme.callback.pointer) {
-            pointerValue = self.theme.callback.pointer(value);
-          } else {
-            pointerValue = value;
-          }
-          self.pointerValue = value;
-          if (self.lastValue !== null) {
-            if (pointerValue instanceof Array) {
-              match = true;
-              for (i = 0; i < pointerValue.length; i++) {
-                if (pointerValue[i] !== self.lastValue[i]) {
-                  match = false;
-                  break;
-                }
-              }
-              if (match) return;
-            } else if (self.lastValue === pointerValue) {
-              return;
-            }
-            self.__animate(pointerValue);
-          } else {
-            self.__update(pointerValue);
-            if (pointerValue instanceof Array) {
-              self.lastValue = [];
-              for (i = 0; i < pointerValue.length; i++) {
-                self.lastValue[i] = pointerValue[i];
-              }
-            } else {
-              self.lastValue = pointerValue;
-            }
-          }
+      if (self.initialised) {
+        self.pointerValue = value;
+        if (self.theme.callback && self.theme.callback.pointer) {
+          pointerValue = self.theme.callback.pointer(value);
         } else {
-          self.initialised = true;
-          //if (!('render' in self.theme) || self.theme.render) {
-            //self.__render(value);
-          //}
-          if (!('render' in self.theme) || self.theme.render) {
-            if (('events' in self.theme) && ('onPointerStart' in self.theme.events)) {
-              if ('function' === typeof self.theme.events.onPointerStart) {
-                self.theme.events.onPointerStart(self, value);
+          pointerValue = value;
+        }
+        self.pointerValue = value;
+        if (self.lastValue !== null) {
+          if (pointerValue instanceof Array) {
+            match = true;
+            for (i = 0; i < pointerValue.length; i++) {
+              if (pointerValue[i] !== self.lastValue[i]) {
+                match = false;
+                break;
               }
             }
-            self.__render(value);
-            if (('events' in self.theme) && ('onPointerStop' in self.theme.events)) {
-              if ('function' === typeof self.theme.events.onPointerStop) {
-                self.theme.events.onPointerStop(self, value);
-              }
+            if (match) return;
+          } else if (self.lastValue === pointerValue) {
+            return;
+          }
+          self.__animate(pointerValue);
+        } else {
+          self.__update(pointerValue);
+          if (pointerValue instanceof Array) {
+            self.lastValue = [];
+            for (i = 0; i < pointerValue.length; i++) {
+              self.lastValue[i] = pointerValue[i];
+            }
+          } else {
+            self.lastValue = pointerValue;
+          }
+        }
+      } else {
+        self.initialised = true;
+        if (!('render' in self.theme) || self.theme.render) {
+          if (('events' in self.theme) && ('onPointerStart' in self.theme.events)) {
+            if ('function' === typeof self.theme.events.onPointerStart) {
+              self.theme.events.onPointerStart(self, value);
+            }
+          }
+          self.__render(value);
+          if (('events' in self.theme) && ('onPointerStop' in self.theme.events)) {
+            if ('function' === typeof self.theme.events.onPointerStop) {
+              self.theme.events.onPointerStop(self, value);
             }
           }
         }
-      });
+      }
     }
   },
 
