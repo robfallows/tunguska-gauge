@@ -387,7 +387,7 @@ GIT repo: https://github.com/robfallows/tunguska-gauge-demo
 - ~~Tests~~
 - Themeroller.
 - Improve Annotation.
-- Include requestAnimationFrame polyfill.
+- ~~Include requestAnimationFrame polyfill.~~
 - ~~Better handling of options overrides.~~
 - Better easing: bespoke functions, rather than cubic Bezier interpolation
 - ~~More demo gauges.~~
