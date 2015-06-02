@@ -1046,53 +1046,54 @@ TunguskaGauge.prototype = {
       match,
       self = this,
       pointerValue;
-    if (!this.animating) {
-      if (self.initialised) {
-        self.pointerValue = value;
-        if (self.theme.callback && self.theme.callback.pointer) {
-          pointerValue = self.theme.callback.pointer(value);
-        } else {
-          pointerValue = value;
-        }
-        self.pointerValue = value;
-        if (self.lastValue !== null) {
-          if (pointerValue instanceof Array) {
-            match = true;
-            for (i = 0; i < pointerValue.length; i++) {
-              if (pointerValue[i] !== self.lastValue[i]) {
-                match = false;
-                break;
-              }
-            }
-            if (match) return;
-          } else if (self.lastValue === pointerValue) {
-            return;
-          }
-          self.__animate(pointerValue);
-        } else {
-          self.__update(pointerValue);
-          if (pointerValue instanceof Array) {
-            self.lastValue = [];
-            for (i = 0; i < pointerValue.length; i++) {
-              self.lastValue[i] = pointerValue[i];
-            }
-          } else {
-            self.lastValue = pointerValue;
-          }
-        }
+    if (this.animating) {
+      cancelAnimationFrame(this.animating);
+    }
+    if (self.initialised) {
+      self.pointerValue = value;
+      if (self.theme.callback && self.theme.callback.pointer) {
+        pointerValue = self.theme.callback.pointer(value);
       } else {
-        self.initialised = true;
-        if (!('render' in self.theme) || self.theme.render) {
-          if (('events' in self.theme) && ('onPointerStart' in self.theme.events)) {
-            if ('function' === typeof self.theme.events.onPointerStart) {
-              self.theme.events.onPointerStart(self, value);
+        pointerValue = value;
+      }
+      self.pointerValue = value;
+      if (self.lastValue !== null) {
+        if (pointerValue instanceof Array) {
+          match = true;
+          for (i = 0; i < pointerValue.length; i++) {
+            if (pointerValue[i] !== self.lastValue[i]) {
+              match = false;
+              break;
             }
           }
-          self.__render(value);
-          if (('events' in self.theme) && ('onPointerStop' in self.theme.events)) {
-            if ('function' === typeof self.theme.events.onPointerStop) {
-              self.theme.events.onPointerStop(self, value);
-            }
+          if (match) return;
+        } else if (self.lastValue === pointerValue) {
+          return;
+        }
+        self.__animate(pointerValue);
+      } else {
+        self.__update(pointerValue);
+        if (pointerValue instanceof Array) {
+          self.lastValue = [];
+          for (i = 0; i < pointerValue.length; i++) {
+            self.lastValue[i] = pointerValue[i];
+          }
+        } else {
+          self.lastValue = pointerValue;
+        }
+      }
+    } else {
+      self.initialised = true;
+      if (!('render' in self.theme) || self.theme.render) {
+        if (('events' in self.theme) && ('onPointerStart' in self.theme.events)) {
+          if ('function' === typeof self.theme.events.onPointerStart) {
+            self.theme.events.onPointerStart(self, value);
+          }
+        }
+        self.__render(value);
+        if (('events' in self.theme) && ('onPointerStop' in self.theme.events)) {
+          if ('function' === typeof self.theme.events.onPointerStop) {
+            self.theme.events.onPointerStop(self, value);
           }
         }
       }
