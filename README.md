@@ -214,48 +214,89 @@ property to true. If specified, `value` sets the pointer value to use (a simple 
 
 The easing data is in `TunguskaGauge.easing`
 
-It is an object of named cubic Bezier control arrays, each being an array of four waypoints (t,v):
-[[t0,v0],[t1,v1],[t2,v2],[t3,v3]] which form the control points of a cubic Beziér Curve.
-Under normal circumstances, the first point will be [0,0] and the fourth will be [1,1].
+It is an object of named easing functions. These take one parameter (t), which takes
+a value between 0 and 1, representing the "distance" along the easing duration time.
+Functions return a number between 0 and 1 indicating the distance travelled by the
+gauge pointer at that time. Note that some functions may exceed 1 (e.g. "bounce") or
+may never return 0 (e.g. "instant").
 
 ```JavaScript
 TunguskaGauge.easing = {
-  linear: [
-    [0, 0],
-    [0.33, 0.33],
-    [0.67, 0.67],
-    [1, 1]
-  ],
-  bounce: [
-    [0, 0],
-    [0.73, 1],
-    [1, 1.3],
-    [1, 1]
-  ],
-  instant: [
-    [0, 1],
-    [0, 1],
-    [0, 1],
-    [1, 1]
-  ],
-  easeIn: [
-    [0, 0],
-    [0.2, 0.5],
-    [0.8, 0.95],
-    [1, 1]
-  ],
-  easeOut: [
-    [0, 0],
-    [0.2, 0.05],
-    [0.8, 0.5],
-    [1, 1]
-  ],
-  easeInOut: [
-    [0, 0],
-    [0.2, 0.1],
-    [0.8, 0.9],
-    [1, 1]
-  ]
+  /*
+   *  Mainly from https://gist.github.com/gre/1650294
+   */
+  // no easing, no acceleration
+  linear: function(t) {
+    return t
+  },
+  // accelerating from zero velocity
+  easeInQuad: function(t) {
+    return t * t
+  },
+  // decelerating to zero velocity
+  easeOutQuad: function(t) {
+    return t * (2 - t)
+  },
+  // acceleration until halfway, then deceleration
+  easeInOutQuad: function(t) {
+    return t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+  },
+  // accelerating from zero velocity
+  easeInCubic: function(t) {
+    return t * t * t
+  },
+  // decelerating to zero velocity
+  easeOutCubic: function(t) {
+    return (--t) * t * t + 1
+  },
+  // acceleration until halfway, then deceleration
+  easeInOutCubic: function(t) {
+    return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
+  },
+  // accelerating from zero velocity
+  easeInQuart: function(t) {
+    return t * t * t * t
+  },
+  // decelerating to zero velocity
+  easeOutQuart: function(t) {
+    return 1 - (--t) * t * t * t
+  },
+  // acceleration until halfway, then deceleration
+  easeInOutQuart: function(t) {
+    return t < .5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t
+  },
+  // accelerating from zero velocity
+  easeInQuint: function(t) {
+    return t * t * t * t * t
+  },
+  // decelerating to zero velocity
+  easeOutQuint: function(t) {
+    return 1 + (--t) * t * t * t * t
+  },
+  // acceleration until halfway, then deceleration
+
+  easeInOutQuint: function(t) {
+    return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t
+  },
+  // bounce effect
+  bounce: function(t) {
+    var p = 0.3;
+    return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+  },
+  // no delay
+  instant: function(t) {
+    return 1;
+  },
+  // alternative names
+  easeIn: function(t) {
+    return this.easeInCubic(t);
+  },
+  easeOut: function(t) {
+    return this.easeOutCubic(t);
+  },
+  easeInOut: function(t) {
+    return this.easeInOutCubic(t);
+  },
 };
 ```
 
@@ -389,7 +430,7 @@ GIT repo: https://github.com/robfallows/tunguska-gauge-demo
 - Improve Annotation.
 - ~~Include requestAnimationFrame polyfill.~~
 - ~~Better handling of options overrides.~~
-- Better easing: bespoke functions, rather than cubic Bezier interpolation
+- ~~Better easing: bespoke functions, rather than cubic Bezier interpolation~~
 - ~~More demo gauges.~~
 - Non-linear scales (vu-meters, anyone?)
 

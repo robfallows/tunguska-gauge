@@ -136,42 +136,43 @@ TunguskaGauge.themes = {
 
 // TunguskaGauge.easing contains some defaults
 TunguskaGauge.easing = {
-  linear: [
-    [0, 0],
-    [0.33, 0.33],
-    [0.67, 0.67],
-    [1, 1]
-  ],
-  bounce: [
-    [0, 0],
-    [0.73, 1],
-    [1, 1.3],
-    [1, 1]
-  ],
-  instant: [
-    [0, 1],
-    [0, 1],
-    [0, 1],
-    [1, 1]
-  ],
-  easeIn: [
-    [0, 0],
-    [0.2, 0.5],
-    [0.8, 0.95],
-    [1, 1]
-  ],
-  easeOut: [
-    [0, 0],
-    [0.2, 0.05],
-    [0.8, 0.5],
-    [1, 1]
-  ],
-  easeInOut: [
-    [0, 0],
-    [0.2, 0.1],
-    [0.8, 0.9],
-    [1, 1]
-  ]
+  /*
+   * Mainly from https://gist.github.com/gre/1650294
+   */
+  // no easing, no acceleration
+  linear: function(t) { return t },
+  // accelerating from zero velocity
+  easeInQuad: function(t) { return t*t },
+  // decelerating to zero velocity
+  easeOutQuad: function(t) { return t*(2-t) },
+  // acceleration until halfway, then deceleration
+  easeInOutQuad: function(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t },
+  // accelerating from zero velocity 
+  easeInCubic: function(t) { return t*t*t },
+  // decelerating to zero velocity 
+  easeOutCubic: function(t) { return (--t)*t*t+1 },
+  // acceleration until halfway, then deceleration 
+  easeInOutCubic: function(t) { return t<.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1 },
+  // accelerating from zero velocity 
+  easeInQuart: function(t) { return t*t*t*t },
+  // decelerating to zero velocity 
+  easeOutQuart: function(t) { return 1-(--t)*t*t*t },
+  // acceleration until halfway, then deceleration
+  easeInOutQuart: function(t) { return t<.5 ? 8*t*t*t*t : 1-8*(--t)*t*t*t },
+  // accelerating from zero velocity
+  easeInQuint: function(t) { return t*t*t*t*t },
+  // decelerating to zero velocity
+  easeOutQuint: function(t) { return 1+(--t)*t*t*t*t },
+  // acceleration until halfway, then deceleration 
+  easeInOutQuint: function(t) { return t<.5 ? 16*t*t*t*t*t : 1+16*(--t)*t*t*t*t },
+  // bounce effect
+  bounce: function(t) { var p = 0.3; return Math.pow(2,-10*t) * Math.sin((t-p/4)*(2*Math.PI)/p) + 1; },
+  // no delay
+  instant: function(t) { return 1; },
+  // alternative names
+  easeIn: function(t) { return this.easeInCubic(t); },
+  easeOut: function(t) { return this.easeOutCubic(t); },
+  easeInOut: function(t) { return this.easeInOutCubic(t); },
 };
 
 // Define the TunguskaGauge object's methods
@@ -369,56 +370,9 @@ TunguskaGauge.prototype = {
     return this;
   },
 
-  /** easing is an array of four waypoints (t,v): [[t0,v0],[t1,v1],[t2,v2],[t3,v3]]
-   *  which form the control points of a cubic Beziér Curve.
-   *  under normal circumstances, the first point will be [0,0] and the fourth will be [1,1]:
-   *  you may use http://matthewlein.com/ceaser/ to generate the remaining four points t1, v1, t2, v2.
-   * t is a time marker (0=start, 1=end)
-   * v is the relative value at that time
-   * tWay is in the range 0..1 and is the time waypoint for which a relative value is to be computed.
-   * It corresponds to a proportion of distance along the Beziér curve.
-   * ==================================================
-   * Based off:
-   * 13thParallel.org Beziér Curve Code
-   * by Dan Pupius (www.pupius.net)
-   * http://www.13thparallel.org/archive/bezier-curves/
-   * ==================================================
-   */
   __tween: function(tWay, easing) {
     'use strict';
-    var Coord = function(t, v) {
-        return {
-          t: t,
-          v: v
-        };
-      },
-      b1 = function(t) {
-        return (1 - t) * (1 - t) * (1 - t);
-      },
-      b2 = function(t) {
-        return 3 * t * t * (1 - t);
-      },
-      b3 = function(t) {
-        return 3 * t * (1 - t) * (1 - t);
-      },
-      b4 = function(t) {
-        return t * t * t;
-      },
-      getBezier = function(t, controlArray) {
-        var v;
-        var c = [];
-        if (t <= 0) {
-          return 0;
-        } else if (t >= 1) {
-          return 1;
-        }
-        for (var i = 0; i < 4; i++) {
-          c[i] = new Coord(controlArray[i][0], controlArray[i][1]);
-        }
-        v = c[0].v * b1(t) + c[1].v * b2(t) + c[2].v * b3(t) + c[3].v * b4(t);
-        return v;
-      };
-    return getBezier(tWay, TunguskaGauge.easing[easing]);
+    return TunguskaGauge.easing[easing](tWay);
   },
 
   __clear: function(c) {
@@ -903,7 +857,7 @@ TunguskaGauge.prototype = {
             self.theme.events.onPointerSweep(self.theme, v);
           }
         }
-        self.animating = window.requestAnimationFrame(step);
+        window.requestAnimationFrame(step);
       }
     }
     this.animating = window.requestAnimationFrame(step);
