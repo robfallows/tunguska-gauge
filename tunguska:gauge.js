@@ -372,7 +372,7 @@ TunguskaGauge.prototype = {
 
   __tween: function(tWay, easing) {
     'use strict';
-    return TunguskaGauge.easing[easing](tWay);
+    return TunguskaGauge.easing[easing](Math.min(1,Math.max(0,tWay)));
   },
 
   __clear: function(c) {
