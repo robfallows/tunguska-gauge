@@ -216,6 +216,7 @@ TunguskaGauge.prototype = {
     'use strict';
     if ('undefined' === typeof copy) {
       copy = obj;
+      return copy;
     } else {
       // Handle the 3 simple types, and null or undefined
       if (null === obj || 'object' !== typeof obj) {
