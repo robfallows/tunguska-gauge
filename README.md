@@ -443,7 +443,7 @@ Package testing courtesy [practicalmeteor:munit](https://atmospherejs.com/practi
 
 ## Contributors
 
-[techieyann](https://github.com/techieyann)
+@techieyann
 
 ## Licence
 
