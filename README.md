@@ -433,12 +433,17 @@ GIT repo: https://github.com/robfallows/tunguska-gauge-demo
 - ~~Better easing: bespoke functions, rather than cubic Bezier interpolation~~
 - ~~More demo gauges.~~
 - Non-linear scales (vu-meters, anyone?)
+- Changelog
 
 ## Tests
 
 Package testing courtesy [practicalmeteor:munit](https://atmospherejs.com/practicalmeteor/munit).
 
 ![Test Results](docs/tests.png)
+
+## Contributors
+
+[techieyann](https://github.com/techieyann)
 
 ## Licence
 
