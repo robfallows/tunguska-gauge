@@ -20,6 +20,6 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
   api.use('templating', 'client');
   api.use('practicalmeteor:munit','client');
-  api.use('gauge','client');
+  api.use('tunguska:gauge','client');
   api.addFiles('tests/client-tests.js','client');
 });
